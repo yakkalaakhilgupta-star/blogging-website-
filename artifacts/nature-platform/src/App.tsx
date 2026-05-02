@@ -24,6 +24,8 @@ import Newsletter from "@/pages/Newsletter";
 import TagPage from "@/pages/TagPage";
 import Unsubscribe from "@/pages/Unsubscribe";
 import AdminMessages from "@/pages/AdminMessages";
+import Privacy from "@/pages/Privacy";
+import Terms from "@/pages/Terms";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -53,6 +55,8 @@ function Router() {
           <Route path="/newsletter" component={Newsletter} />
           <Route path="/unsubscribe" component={Unsubscribe} />
           <Route path="/admin/messages" component={AdminMessages} />
+          <Route path="/privacy" component={Privacy} />
+          <Route path="/terms" component={Terms} />
           <Route component={NotFound} />
         </Switch>
       </ErrorBoundary>

@@ -96,6 +96,34 @@ export default function ArticleReader() {
         <meta name="twitter:title" content={pageTitle} />
         <meta name="twitter:description" content={pageDesc} />
         {article.imageUrl && <meta name="twitter:image" content={article.imageUrl} />}
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Article",
+          "headline": article.title,
+          "description": pageDesc,
+          "image": article.imageUrl || undefined,
+          "url": canonicalUrl,
+          "datePublished": publishedDate.toISOString(),
+          "dateModified": publishedDate.toISOString(),
+          "author": {
+            "@type": "Person",
+            "name": "The Verdant Page"
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "The Verdant Page",
+            "logo": {
+              "@type": "ImageObject",
+              "url": `${window.location.origin}/favicon.svg`
+            }
+          },
+          "articleSection": article.category,
+          "timeRequired": `PT${article.readTime}M`,
+          "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": canonicalUrl
+          }
+        })}</script>
       </Helmet>
 
       <ReadingProgressBar />

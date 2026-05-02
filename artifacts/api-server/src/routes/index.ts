@@ -10,6 +10,7 @@ import contactRouter from "./contact";
 import newsletterRouter from "./newsletter";
 import feedRouter from "./feed";
 import analyticsRouter from "./analytics";
+import sitemapRouter from "./sitemap";
 
 const router: IRouter = Router();
 
@@ -42,5 +43,6 @@ router.use(contactRouter);
 router.use(newsletterRouter);
 router.use(feedRouter);
 router.use(analyticsRouter);
+router.use(sitemapRouter);
 
 export default router;

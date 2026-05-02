@@ -49,8 +49,12 @@ export function Footer() {
           </div>
         </div>
         
-        <div className="mt-12 pt-8 border-t border-background/10 text-center text-sm text-muted-foreground">
+        <div className="mt-12 pt-8 border-t border-background/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-muted-foreground">
           <p>© {new Date().getFullYear()} The Verdant Page. All rights reserved.</p>
+          <div className="flex items-center gap-4">
+            <Link href="/privacy" className="hover:text-primary-foreground transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-primary-foreground transition-colors">Terms of Service</Link>
+          </div>
         </div>
       </div>
     </footer>
