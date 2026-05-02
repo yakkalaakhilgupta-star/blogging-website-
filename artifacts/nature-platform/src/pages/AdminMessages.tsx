@@ -1,10 +1,13 @@
 import { useState, useCallback } from "react";
-import { Mail, MailOpen, Trash2, Reply, RefreshCw } from "lucide-react";
+import { Mail, MailOpen, Trash2, Reply, RefreshCw, Lock, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+
+const STORAGE_KEY = "verdant_admin_secret";
 
 interface ContactMessage {
   id: number;
@@ -16,37 +19,120 @@ interface ContactMessage {
   createdAt: string;
 }
 
-async function fetchMessages(): Promise<ContactMessage[]> {
-  const res = await fetch("/api/contact/messages");
+function getAuthHeader(secret: string) {
+  return { Authorization: `Bearer ${secret}` };
+}
+
+async function fetchMessages(secret: string): Promise<ContactMessage[]> {
+  const res = await fetch("/api/contact/messages", {
+    headers: getAuthHeader(secret),
+  });
+  if (res.status === 401) throw new Error("UNAUTHORIZED");
   if (!res.ok) throw new Error("Failed to fetch messages");
   return res.json();
 }
 
+function SecretGate({ onAuth }: { onAuth: (s: string) => void }) {
+  const [value, setValue] = useState("");
+  const [show, setShow] = useState(false);
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (value.trim()) {
+      localStorage.setItem(STORAGE_KEY, value.trim());
+      onAuth(value.trim());
+    }
+  };
+
+  return (
+    <div className="w-full min-h-[70vh] flex items-center justify-center bg-background px-4">
+      <div className="max-w-sm w-full text-center">
+        <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
+          <Lock className="h-8 w-8 text-primary" />
+        </div>
+        <h2 className="font-serif text-3xl font-bold mb-2">Admin Access</h2>
+        <p className="text-muted-foreground mb-8 text-sm">Enter your admin secret key to continue.</p>
+        <form onSubmit={submit} className="flex flex-col gap-3">
+          <div className="relative">
+            <Input
+              type={show ? "text" : "password"}
+              placeholder="Admin secret key"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              className="pr-10 font-mono"
+              autoFocus
+            />
+            <button
+              type="button"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              onClick={() => setShow((s) => !s)}
+            >
+              {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
+          <Button type="submit" disabled={!value.trim()}>
+            Unlock Inbox
+          </Button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminMessages() {
+  const stored = localStorage.getItem(STORAGE_KEY) ?? "";
+  const [secret, setSecret] = useState(stored);
+  const [authError, setAuthError] = useState(false);
   const qc = useQueryClient();
   const [selected, setSelected] = useState<ContactMessage | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const { data: messages, isLoading, refetch } = useQuery({
-    queryKey: ["admin-messages"],
-    queryFn: fetchMessages,
+    queryKey: ["admin-messages", secret],
+    queryFn: () => fetchMessages(secret),
+    enabled: !!secret,
+    retry: (count, err) => {
+      if ((err as Error).message === "UNAUTHORIZED") { setAuthError(true); return false; }
+      return count < 1;
+    },
   });
 
   const markRead = useCallback(async (id: number) => {
-    await fetch(`/api/contact/${id}/read`, { method: "PATCH" });
+    await fetch(`/api/contact/${id}/read`, {
+      method: "PATCH",
+      headers: getAuthHeader(secret),
+    });
     qc.invalidateQueries({ queryKey: ["admin-messages"] });
-  }, [qc]);
+  }, [qc, secret]);
 
   const deleteMessage = useCallback(async (id: number) => {
     setDeletingId(id);
     try {
-      await fetch(`/api/contact/${id}`, { method: "DELETE" });
+      await fetch(`/api/contact/${id}`, {
+        method: "DELETE",
+        headers: getAuthHeader(secret),
+      });
       setSelected(null);
       qc.invalidateQueries({ queryKey: ["admin-messages"] });
     } finally {
       setDeletingId(null);
     }
-  }, [qc]);
+  }, [qc, secret]);
+
+  const handleAuth = (s: string) => {
+    setAuthError(false);
+    setSecret(s);
+  };
+
+  const handleSignOut = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    setSecret("");
+    setAuthError(false);
+  };
+
+  if (!secret || authError) {
+    return <SecretGate onAuth={handleAuth} />;
+  }
 
   const unread = messages?.filter((m) => !m.isRead).length ?? 0;
 
@@ -68,9 +154,14 @@ export default function AdminMessages() {
               {messages?.length ?? 0} total messages
             </p>
           </div>
-          <Button variant="outline" size="sm" onClick={() => refetch()}>
-            <RefreshCw className="h-4 w-4 mr-2" /> Refresh
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => refetch()}>
+              <RefreshCw className="h-4 w-4 mr-2" /> Refresh
+            </Button>
+            <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              <Lock className="h-4 w-4 mr-2" /> Lock
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">

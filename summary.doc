@@ -1,252 +1,204 @@
-THE VERDANT PAGE — PROJECT SUMMARY
-====================================
-Nature Writing Platform | Full-Stack Web Application
-Built on: React + Vite (frontend) · Express (API) · PostgreSQL (database)
-Monorepo managed with pnpm workspaces
+THE VERDANT PAGE — Project Summary
+Generated: 2 May 2026
+================================================================================
+
+OVERVIEW
+--------
+The Verdant Page is a professional nature writing platform built on:
+  - Frontend:  React 19 + Vite (TypeScript), Tailwind CSS, shadcn/ui, Framer Motion
+  - Backend:   Express 5 (TypeScript, ESM), Pino structured logging
+  - Database:  PostgreSQL via Drizzle ORM
+  - Monorepo:  pnpm workspaces
+  - Deployed:  Replit (frontend port 22885, API port 8080)
 
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1. PROJECT OVERVIEW
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SPRINT 1 STATUS — ALL 21 FEATURES COMPLETE
+-------------------------------------------
+#  Feature                         Status    Notes
+1  Markdown Rendering               DONE      react-markdown with custom headings, blockquotes, code blocks
+2  Table of Contents                DONE      Auto-generated from headings, scroll-spy active section
+3  Reading Progress Bar             DONE      Fixed green bar tied to article scroll position
+5  Related Articles                 DONE      3 cards matched by category at article bottom
+11 Tag Pages                        DONE      /tags/:slug listing with breadcrumb
+17 Species Article Cross-Link       DONE      "Meet the Species" card on articles; "Read Article" on species
+21 Per-Page SEO Meta Tags           DONE      react-helmet-async per page (title, description, canonical)
+22 Open Graph / Twitter Cards       DONE      OG + Twitter card meta on all article and species pages
+25 RSS Feed                         DONE      GET /api/feed.xml — valid RSS 2.0 with full article content
+29 Share Buttons                    DONE      Twitter, Facebook, LinkedIn, copy-link on ArticleReader
+40 Unsubscribe Landing Page         DONE      /unsubscribe with email confirmation
+52 Contact Message Inbox            DONE      /admin/messages — inbox with read/delete, auth-gated
+55 API Rate Limiting                DONE      10/hr on contact+newsletter, 300/15min on all routes
+57 Input Sanitisation               DONE      validator.js escape + normalizeEmail on all user inputs
+61 Image Lazy Loading               DONE      loading="lazy" on all article cards, species, reader images
+66 IUCN Status Filter               DONE      Filter by kingdom + conservation status on /species
+79 Error Boundaries                 DONE      React ErrorBoundary wraps all routes with retry + home link
+80 404 and Error Pages              DONE      Custom not-found page with Helmet noindex
+81 Database Indexing                DONE      Indexes on slug, status, featured, category, tag, species slug
+89 Analytics Integration            DONE      Self-hosted: POST /api/analytics/pageview (DB-backed)
+93 Error Tracking (Sentry)          DONE      @sentry/react active when VITE_SENTRY_DSN env var is set
 
-A professional portfolio and publishing site for a nature writer covering
-animals, plants, oceans, and conservation. The platform supports article
-publishing, species profiles, a portfolio of press clips, service offerings,
-contact/newsletter capture, and a full REST API backend.
 
-Brand palette: Forest green (#2D5016) + Ivory (#F5F0E8)
-Typography: Fraunces (serif headings) + Plus Jakarta Sans (body)
-Animations: Framer Motion throughout
+SECURITY HARDENING (Production-Level) — Implemented 2 May 2026
+---------------------------------------------------------------
+1. HTTP Security Headers via helmet
+   - Content-Security-Policy (CSP)
+   - X-Frame-Options: DENY
+   - X-Content-Type-Options: nosniff
+   - Referrer-Policy: no-referrer
+   - HSTS enabled in production
+   - Permissions-Policy
+
+2. CORS
+   - Restricted via ALLOWED_ORIGINS env var (comma-separated list)
+   - Permissive only in development (unset env var)
+
+3. Request Body Limits
+   - JSON and URL-encoded payloads capped at 512 KB (DoS prevention)
+
+4. HTTP Parameter Pollution (hpp middleware)
+   - Strips duplicate query parameters to prevent logic bypass attacks
+
+5. Admin Endpoint Authentication — Bearer token (ADMIN_SECRET env var)
+   The following endpoints require Authorization: Bearer <ADMIN_SECRET>:
+   - POST   /api/articles              (create article)
+   - PUT    /api/articles/:slug        (update article)
+   - DELETE /api/articles/:slug        (delete article)
+   - POST   /api/species               (create species)
+   - PUT    /api/species/:slug         (update species)
+   - DELETE /api/species/:slug         (delete species)
+   - POST   /api/portfolio             (create portfolio clip)
+   - DELETE /api/portfolio/:id         (delete portfolio clip)
+   - GET    /api/contact/messages      (read inbox — contains PII)
+   - PATCH  /api/contact/:id/read      (mark message read)
+   - DELETE /api/contact/:id           (delete message)
+   - GET    /api/newsletter            (list subscribers — contains PII)
+   - GET    /api/analytics/summary     (analytics data)
+
+   Public (no auth required):
+   - GET  /api/articles, /api/articles/featured, /api/articles/stats
+   - GET  /api/articles/:slug (also increments view count)
+   - GET  /api/species, /api/species/:slug
+   - GET  /api/portfolio, /api/categories, /api/tags, /api/feed.xml
+   - POST /api/contact (submit contact form)
+   - POST /api/newsletter (subscribe)
+   - POST /api/newsletter/unsubscribe
+   - POST /api/analytics/pageview
+
+6. Input Sanitisation
+   - validator.js escape(), normalizeEmail() on all user-submitted strings
+   - Zod schema validation on all route bodies and query params
+
+7. SQL Injection Prevention
+   - All queries use Drizzle ORM parameterized statements
+   - No raw SQL string interpolation anywhere
+
+8. Production Error Handler
+   - Stack traces suppressed in NODE_ENV=production
+   - Generic "Internal server error" returned to client
+   - Full error detail logged server-side via Pino
+
+9. Graceful Shutdown
+   - SIGTERM/SIGINT handlers close HTTP server then drain DB pool
+   - 10-second forced exit fallback if shutdown hangs
+
+10. Admin UI Auth Gate
+    - /admin/messages requires secret key entry before any API call is made
+    - Key is stored in localStorage; "Lock" button clears it immediately
+    - All fetch calls include Authorization: Bearer <secret>
+    - 401 response automatically re-shows the lock screen
 
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-2. REPOSITORY STRUCTURE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ENVIRONMENT VARIABLES
+---------------------
+Variable          Required  Description
+DATABASE_URL      YES       PostgreSQL connection string (auto-provisioned on Replit)
+PORT              YES       API server port (auto-set by Replit to 8080)
+ADMIN_SECRET      YES       Bearer token for all admin/write endpoints — set in Replit Secrets
+ALLOWED_ORIGINS   No        Comma-separated allowed CORS origins (permissive if unset)
+VITE_SENTRY_DSN   No        Sentry project DSN — error tracking disabled if unset
 
+
+TECH STACK
+----------
+Package                  Purpose
+react 19                 UI framework
+vite 6                   Dev server and bundler
+@tanstack/react-query 5  Server state and data fetching
+wouter 3                 Client-side routing
+tailwindcss 4            Utility CSS
+shadcn/ui                Accessible component library
+framer-motion 12         Animations
+react-markdown 9         Markdown rendering in ArticleReader
+react-helmet-async 2     Per-page SEO meta tags
+date-fns 4               Date formatting
+lucide-react             Icons
+@sentry/react 8          Error tracking
+express 5                API server framework
+pino + pino-http         Structured JSON logging
+drizzle-orm 0.43         Type-safe ORM with parameterized queries
+drizzle-kit 0.31         Schema push and migrations
+pg (node-postgres) 8     PostgreSQL driver
+helmet 8                 HTTP security headers
+cors 2                   CORS middleware
+express-rate-limit 8     Rate limiting
+hpp 0.2                  HTTP parameter pollution protection
+validator 13             Input sanitisation and email validation
+
+
+DATABASE SCHEMA
+---------------
+Table                 Key Columns
+articles              id, slug, title, content, category, status, featured,
+                      view_count, word_count, read_time, image_url,
+                      seo_title, seo_description, published_at
+article_tags          article_id, tag_id
+tags                  id, slug, name
+categories            id, slug, name, description
+species               id, slug, common_name, scientific_name, kingdom,
+                      conservation_status, article_id (FK), image_url
+portfolio_clips       id, title, publication, category, url, date
+contact_messages      id, name, email, subject, message, is_read, created_at
+newsletter_subs       id, email, name, created_at (unique on email)
+page_views            id, path, referrer, created_at
+
+
+ARCHITECTURE
+------------
 /
 ├── artifacts/
-│   ├── nature-platform/        React + Vite frontend (served at /)
-│   └── api-server/             Express REST API (served at /api)
+│   ├── nature-platform/        React+Vite frontend
+│   │   └── src/
+│   │       ├── pages/          Home, Articles, ArticleReader, Species, SpeciesProfile,
+│   │       │                   Portfolio, Services, About, Contact, Newsletter,
+│   │       │                   TagPage, Unsubscribe, AdminMessages, not-found
+│   │       ├── components/
+│   │       │   ├── article/    ArticleMarkdown, RelatedArticles, ReadingProgressBar,
+│   │       │   │               TableOfContents
+│   │       │   ├── layout/     Layout, Navbar, Footer
+│   │       │   └── ui/         article-card, badge, button, input, skeleton, ...
+│   │       ├── hooks/          usePageAnalytics
+│   │       └── lib/            sentry.ts
+│   └── api-server/             Express API
+│       └── src/
+│           ├── routes/         articles, species, portfolio, contact, newsletter,
+│           │                   categories, tags, feed, analytics, health
+│           ├── middlewares/    adminAuth.ts (requireAdmin — Bearer token)
+│           └── lib/            logger.ts
 ├── lib/
-│   ├── db/                     Drizzle ORM schema + migrations
-│   ├── api-spec/               OpenAPI 3.0 spec (openapi.yaml)
-│   ├── api-client-react/       Orval-generated React Query hooks
-│   └── api-zod/                Orval-generated Zod validators
-└── scripts/                    Shared utility scripts
+│   ├── db/                     Drizzle schema, pool, migrations
+│   └── api-client-react/       Generated OpenAPI client + React Query hooks
 
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-3. DATABASE SCHEMA  (lib/db/src/schema/)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-TABLE: articles
-  id, title, slug, excerpt, content, image_url, image_alt
-  category_id (FK → categories), category (text cache)
-  author, read_time, word_count, view_count
-  status (published | draft | archived)
-  seo_title, seo_description
-  published_at, created_at, updated_at
-
-TABLE: categories
-  id, name, slug, description, color, icon, created_at
-  SEEDED: Animals · Oceans · Plants · Conservation · Field Notes · Human & Nature
-
-TABLE: tags
-  id, name, slug, created_at
-  SEEDED: 12 tags (coral reef, climate change, endangered species, rewilding,
-           fungi, ocean health, behavior, field research, botany, marine biology,
-           predators, ecosystems)
-
-TABLE: article_tags  (many-to-many join)
-  article_id (FK), tag_id (FK)
-
-TABLE: species
-  id, common_name, scientific_name, slug, kingdom, species_class
-  order_name, family, conservation_status (IUCN codes)
-  habitat, geographic_range, diet, description
-  fun_facts (JSON array), image_url, iucn_url, article_id (FK)
-  created_at
-  SEEDED: African Elephant · Blue Whale · Mimic Octopus · Corpse Flower · Snow Leopard
-
-TABLE: portfolio_clips
-  id, title, publication, url, date, category, description
-  word_count, image_url, featured, created_at
-  SEEDED: 7 portfolio clips across major publications
-
-TABLE: contact_messages
-  id, name, email, subject, message, created_at
-
-TABLE: newsletter_subscribers
-  id, email, name, status (active | unsubscribed), subscribed_at
+SPRINT 2 PLANNED (next)
+------------------------
+#14 Global Search Overlay (Cmd+K keyboard shortcut, modal, live results)
+#20 Article Pagination / Infinite Scroll (cursor-based)
+#37 Newsletter Integration (Resend — transactional email)
+#39 Double Opt-In email confirmation flow
+#46 Portfolio CRUD UI (admin interface)
+#48 Draft Preview (preview unpublished articles)
+#74 Cursor-Based API Pagination
 
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-4. REST API  (artifacts/api-server — served at /api)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-ARTICLES
-  GET    /api/articles              List (filter: status, categoryId, tag, search, limit, offset)
-  POST   /api/articles              Create article
-  GET    /api/articles/:slug        Get by slug (auto-increments viewCount)
-  PUT    /api/articles/:slug        Update article
-  DELETE /api/articles/:slug        Delete article
-  POST   /api/articles/:id/tags     Attach tags to article
-
-CATEGORIES
-  GET    /api/categories            List all categories
-  POST   /api/categories            Create category
-  GET    /api/categories/:slug      Get by slug
-  PUT    /api/categories/:slug      Update
-  DELETE /api/categories/:slug      Delete
-
-TAGS
-  GET    /api/tags                  List all tags
-  POST   /api/tags                  Create tag
-  GET    /api/tags/:slug            Get by slug
-  PUT    /api/tags/:slug            Update
-  DELETE /api/tags/:slug            Delete
-
-SPECIES
-  GET    /api/species               List (filter: kingdom, conservationStatus, search)
-  POST   /api/species               Create species profile
-  GET    /api/species/:slug         Get species by slug
-  PUT    /api/species/:slug         Update
-  DELETE /api/species/:slug         Delete
-
-PORTFOLIO
-  GET    /api/portfolio             List clips (filter: featured)
-  POST   /api/portfolio             Create clip
-  GET    /api/portfolio/:id         Get by id
-  PUT    /api/portfolio/:id         Update
-  DELETE /api/portfolio/:id         Delete
-
-CONTACT
-  POST   /api/contact               Submit contact message
-  GET    /api/contact               List all messages (admin)
-
-NEWSLETTER
-  POST   /api/newsletter/subscribe  Subscribe email
-  POST   /api/newsletter/unsubscribe Unsubscribe email
-  GET    /api/newsletter            List subscribers (admin)
-
-HEALTH
-  GET    /api/healthz               Health check
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-5. CODE GENERATION PIPELINE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Source of truth: lib/api-spec/openapi.yaml
-
-Running `pnpm --filter @workspace/api-spec run codegen` generates:
-  • lib/api-client-react/src/generated/api.ts       — React Query hooks
-  • lib/api-client-react/src/generated/api.schemas.ts — TypeScript types
-  • lib/api-zod/src/generated/api.ts               — Zod validation schemas
-
-Frontend consumes typed hooks like:
-  useListArticles(params)   useGetArticle(slug)
-  useListSpecies(params)    useListCategories()   etc.
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-6. FRONTEND PAGES  (artifacts/nature-platform/src/pages/)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Route         File                  Description
-/             Home.tsx              Hero, featured articles, stats, newsletter CTA
-/articles     Articles.tsx          Article grid with live category filter + search
-/articles/:s  ArticleReader.tsx     Full article with view count, tags, share buttons
-/species      Species.tsx           Species grid with kingdom + IUCN status filters
-/species/:s   SpeciesProfile.tsx    Full species profile: facts, conservation, fun facts
-/portfolio    Portfolio.tsx         Press clips / published work
-/services     Services.tsx          Writing services offered
-/about        About.tsx             Author bio page
-/contact      Contact.tsx           Contact form (posts to API)
-/newsletter   Newsletter.tsx        Newsletter signup (posts to API)
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-7. SEEDED CONTENT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-ARTICLES (6 published, all with cover images):
-  1. The Secret Social Lives of Elephants
-  2. How Coral Reefs Communicate — And Why It Matters
-  3. The Intelligence of Mycelium Networks
-  4. Why Are Coral Reefs Bleaching?
-  5. The Mimic Octopus: A Master of Disguise
-  6. Rewilding Europe: Does It Work?
-
-SPECIES (5 profiles, all with cover images):
-  1. African Elephant  (EN — Endangered)
-  2. Blue Whale        (EN — Endangered)
-  3. Mimic Octopus     (LC — Least Concern)
-  4. Corpse Flower     (VU — Vulnerable)
-  5. Snow Leopard      (VU — Vulnerable)
-
-PORTFOLIO CLIPS: 7 clips seeded from sample publications
-CATEGORIES: 6 (Animals, Oceans, Plants, Conservation, Field Notes, Human & Nature)
-TAGS: 12 topic tags linked to articles
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-8. IMAGES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Stored in: artifacts/nature-platform/public/images/
-
-AI-generated (Imagen 4):
-  coral-reefs-communicate.png
-  mycelium-networks.png
-  species-african-elephant.png
-  species-blue-whale.png
-  species-mimic-octopus.png
-  species-corpse-flower.png
-
-Unsplash (remote URLs in DB):
-  elephants-social-lives    — elephant herd at sunset
-  why-coral-reefs-bleaching — bleached coral reef
-  mimic-octopus article     — octopus underwater
-  rewilding-europe          — wolf in forest
-  snow-leopard species      — snow leopard portrait
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-9. KEY TECHNICAL DECISIONS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-• Contract-first API: OpenAPI spec drives all type generation (Orval + Zod)
-• Drizzle ORM: type-safe schema defined in lib/db, migrations via drizzle-kit
-• View count: GET /api/articles/:slug auto-increments view_count in the DB
-• Category colors: stored in DB, rendered as colored dots in the article filter UI
-• IUCN status colors: LC=green, NT=yellow, VU=orange, EN=red, CR=dark red, EX=grey
-• React Query: all data fetching uses generated hooks with proper query keys
-• Framer Motion: hover lifts on cards, fade-in on page load, staggered grid animations
-• Codegen fix: orval generates duplicate exports; patched with printf override in
-  lib/api-spec/package.json to write a clean index.ts for api-zod
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-10. PENDING / FUTURE WORK
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-• GitHub push — remote configured (https://github.com/Sunayana225/blogging-website-)
-  Push via Replit's Version Control panel (git icon, left sidebar) or
-  provide a GitHub Personal Access Token for agent-assisted push.
-
-• Admin panel — CRUD UI for managing articles, species, and portfolio from browser
-• Markdown rendering — article body currently plain text; add react-markdown for
-  rich formatting (headers, bold, blockquotes, images inline)
-• SEO meta tags — add react-helmet-async for per-page title/description/OG tags
-• Authentication — protect admin routes (Replit Auth or Clerk)
-• Image upload — replace URL strings with object storage (Replit App Storage)
-• Search — full-text search across articles and species using PostgreSQL tsvector
-• Pagination — articles and species lists are unpaged; add cursor-based pagination
-• RSS feed — /api/feed.xml for subscribers and aggregators
-• Newsletter integration — hook up to Mailchimp or Resend for actual email delivery
-
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+================================================================================
 END OF SUMMARY
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

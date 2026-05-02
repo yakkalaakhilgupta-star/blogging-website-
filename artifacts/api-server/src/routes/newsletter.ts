@@ -4,6 +4,7 @@ import { newsletterSubscribersTable } from "@workspace/db";
 import { SubscribeNewsletterBody } from "@workspace/api-zod";
 import { eq } from "drizzle-orm";
 import validator from "validator";
+import { requireAdmin } from "../middlewares/adminAuth";
 
 const router = Router();
 
@@ -34,7 +35,7 @@ router.post("/newsletter", async (req, res) => {
   res.status(201).json(subscriber ?? { message: "Already subscribed" });
 });
 
-router.get("/newsletter", async (req, res) => {
+router.get("/newsletter", requireAdmin, async (req, res) => {
   const subscribers = await db
     .select()
     .from(newsletterSubscribersTable)

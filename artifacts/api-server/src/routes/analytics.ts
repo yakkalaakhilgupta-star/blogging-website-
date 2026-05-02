@@ -2,6 +2,7 @@ import { Router } from "express";
 import { db } from "@workspace/db";
 import { pageViewsTable } from "@workspace/db";
 import { sql, desc } from "drizzle-orm";
+import { requireAdmin } from "../middlewares/adminAuth";
 
 const router = Router();
 
@@ -22,7 +23,7 @@ router.post("/analytics/pageview", async (req, res) => {
   }
 });
 
-router.get("/analytics/summary", async (req, res) => {
+router.get("/analytics/summary", requireAdmin, async (req, res) => {
   const [totalViews, topPages] = await Promise.all([
     db.select({ count: sql<number>`count(*)` }).from(pageViewsTable),
     db.select({

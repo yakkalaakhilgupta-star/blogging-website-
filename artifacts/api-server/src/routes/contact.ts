@@ -4,6 +4,7 @@ import { contactMessagesTable } from "@workspace/db";
 import { SubmitContactBody } from "@workspace/api-zod";
 import { eq, desc } from "drizzle-orm";
 import validator from "validator";
+import { requireAdmin } from "../middlewares/adminAuth";
 
 const router = Router();
 
@@ -32,7 +33,7 @@ router.post("/contact", async (req, res) => {
   res.status(201).json(msg);
 });
 
-router.get("/contact/messages", async (req, res) => {
+router.get("/contact/messages", requireAdmin, async (req, res) => {
   const messages = await db
     .select()
     .from(contactMessagesTable)
@@ -40,7 +41,7 @@ router.get("/contact/messages", async (req, res) => {
   res.json(messages);
 });
 
-router.patch("/contact/:id/read", async (req, res) => {
+router.patch("/contact/:id/read", requireAdmin, async (req, res) => {
   const id = Number(req.params.id);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
   const [updated] = await db
@@ -52,7 +53,7 @@ router.patch("/contact/:id/read", async (req, res) => {
   res.json(updated);
 });
 
-router.delete("/contact/:id", async (req, res) => {
+router.delete("/contact/:id", requireAdmin, async (req, res) => {
   const id = Number(req.params.id);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
   await db.delete(contactMessagesTable).where(eq(contactMessagesTable.id, id));

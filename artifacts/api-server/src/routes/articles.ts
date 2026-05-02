@@ -10,6 +10,7 @@ import {
   UpdateArticleParams,
   DeleteArticleParams,
 } from "@workspace/api-zod";
+import { requireAdmin } from "../middlewares/adminAuth";
 
 const router = Router();
 
@@ -68,20 +69,7 @@ router.get("/articles", async (req, res) => {
   res.json({ articles, total: Number(countResult[0]?.count ?? 0) });
 });
 
-router.post("/articles", async (req, res) => {
-  const parsed = CreateArticleBody.safeParse(req.body);
-  if (!parsed.success) { res.status(400).json({ error: parsed.error }); return; }
-  const { tagIds, ...data } = parsed.data;
-  const wordCount = data.content.split(/\s+/).length;
-  const [article] = await db.insert(articlesTable).values({ ...data, wordCount }).returning();
-  if (tagIds && tagIds.length > 0) {
-    await db.insert(articleTagsTable).values(tagIds.map((tid) => ({ articleId: article.id, tagId: tid })));
-  }
-  const [withTags] = await attachTags([article]);
-  res.status(201).json(withTags);
-});
-
-router.get("/articles/featured", async (req, res) => {
+router.get("/articles/featured", async (_req, res) => {
   const rawArticles = await db.select().from(articlesTable)
     .where(and(eq(articlesTable.featured, true), eq(articlesTable.status, "published")))
     .orderBy(sql`${articlesTable.publishedAt} desc`).limit(3);
@@ -89,7 +77,7 @@ router.get("/articles/featured", async (req, res) => {
   res.json(articles);
 });
 
-router.get("/articles/stats", async (req, res) => {
+router.get("/articles/stats", async (_req, res) => {
   const [total, byCategory, featuredCount, viewsResult] = await Promise.all([
     db.select({ count: sql<number>`count(*)` }).from(articlesTable).where(eq(articlesTable.status, "published")),
     db.select({ category: articlesTable.category, count: sql<number>`count(*)` })
@@ -117,7 +105,20 @@ router.get("/articles/:slug", async (req, res) => {
   res.json(withTags);
 });
 
-router.put("/articles/:slug", async (req, res) => {
+router.post("/articles", requireAdmin, async (req, res) => {
+  const parsed = CreateArticleBody.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error }); return; }
+  const { tagIds, ...data } = parsed.data;
+  const wordCount = data.content.split(/\s+/).length;
+  const [article] = await db.insert(articlesTable).values({ ...data, wordCount }).returning();
+  if (tagIds && tagIds.length > 0) {
+    await db.insert(articleTagsTable).values(tagIds.map((tid) => ({ articleId: article.id, tagId: tid })));
+  }
+  const [withTags] = await attachTags([article]);
+  res.status(201).json(withTags);
+});
+
+router.put("/articles/:slug", requireAdmin, async (req, res) => {
   const paramsParsed = UpdateArticleParams.safeParse(req.params);
   const bodyParsed = UpdateArticleBody.safeParse(req.body);
   if (!paramsParsed.success || !bodyParsed.success) { res.status(400).json({ error: "Invalid input" }); return; }
@@ -137,7 +138,7 @@ router.put("/articles/:slug", async (req, res) => {
   res.json(withTags);
 });
 
-router.delete("/articles/:slug", async (req, res) => {
+router.delete("/articles/:slug", requireAdmin, async (req, res) => {
   const parsed = DeleteArticleParams.safeParse(req.params);
   if (!parsed.success) { res.status(400).json({ error: parsed.error }); return; }
   await db.delete(articlesTable).where(eq(articlesTable.slug, parsed.data.slug));

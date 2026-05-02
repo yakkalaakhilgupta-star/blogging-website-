@@ -7,6 +7,7 @@ import {
   CreatePortfolioClipBody,
   DeletePortfolioClipParams,
 } from "@workspace/api-zod";
+import { requireAdmin } from "../middlewares/adminAuth";
 
 const router = Router();
 
@@ -27,7 +28,7 @@ router.get("/portfolio", async (req, res) => {
   res.json(clips);
 });
 
-router.post("/portfolio", async (req, res) => {
+router.post("/portfolio", requireAdmin, async (req, res) => {
   const parsed = CreatePortfolioClipBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error });
@@ -37,7 +38,7 @@ router.post("/portfolio", async (req, res) => {
   res.status(201).json(clip);
 });
 
-router.delete("/portfolio/:id", async (req, res) => {
+router.delete("/portfolio/:id", requireAdmin, async (req, res) => {
   const parsed = DeletePortfolioClipParams.safeParse(req.params);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error });
