@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import { useLocation } from "wouter";
 import { useListArticles, getListArticlesQueryKey, useListCategories, getListCategoriesQueryKey } from "@workspace/api-client-react";
 import { ArticleCard } from "@/components/ui/article-card";
@@ -117,6 +118,17 @@ export default function Articles() {
 
   return (
     <div className="w-full bg-background pt-12 pb-24">
+      <Helmet>
+        <title>Essays – The Verdant Page</title>
+        <meta name="description" content="All essays and articles about the natural world — ecology, wildlife, conservation, and more." />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Essays – The Verdant Page" />
+        <meta property="og:description" content="All essays and articles about the natural world — ecology, wildlife, conservation, and more." />
+        <meta property="og:url" content={window.location.href} />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="Essays – The Verdant Page" />
+        <meta name="twitter:description" content="All essays and articles about the natural world — ecology, wildlife, conservation, and more." />
+      </Helmet>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="max-w-3xl mb-16">

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -47,6 +48,17 @@ export default function Contact() {
 
   return (
     <div className="w-full bg-background pt-12 pb-32">
+      <Helmet>
+        <title>Contact – The Verdant Page</title>
+        <meta name="description" content="Get in touch about commissions, collaborations, or speaking engagements." />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Contact – The Verdant Page" />
+        <meta property="og:description" content="Get in touch about commissions, collaborations, or speaking engagements." />
+        <meta property="og:url" content={window.location.href} />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="Contact – The Verdant Page" />
+        <meta name="twitter:description" content="Get in touch about commissions, collaborations, or speaking engagements." />
+      </Helmet>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}

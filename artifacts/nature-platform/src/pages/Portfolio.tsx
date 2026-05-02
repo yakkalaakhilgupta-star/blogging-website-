@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { useListPortfolioClips, getListPortfolioClipsQueryKey } from "@workspace/api-client-react";
 import { format } from "date-fns";
 import { ExternalLink, Award, FileText } from "lucide-react";
@@ -21,6 +22,17 @@ export default function Portfolio() {
 
   return (
     <div className="w-full bg-background pt-12 pb-32">
+      <Helmet>
+        <title>Portfolio – The Verdant Page</title>
+        <meta name="description" content="Published clips and writing samples across ecology, wildlife, conservation, and natural history." />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Portfolio – The Verdant Page" />
+        <meta property="og:description" content="Published clips and writing samples across ecology, wildlife, conservation, and natural history." />
+        <meta property="og:url" content={window.location.href} />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="Portfolio – The Verdant Page" />
+        <meta name="twitter:description" content="Published clips and writing samples across ecology, wildlife, conservation, and natural history." />
+      </Helmet>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}

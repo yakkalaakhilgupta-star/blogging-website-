@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { useListSpecies, getListSpeciesQueryKey } from "@workspace/api-client-react";
 import { Link } from "wouter";
 import { Input } from "@/components/ui/input";
@@ -45,6 +46,17 @@ export default function Species() {
 
   return (
     <div className="w-full bg-background pt-12 pb-24">
+      <Helmet>
+        <title>Species Directory – The Verdant Page</title>
+        <meta name="description" content="A field guide to wildlife, plants, and fungi — ecology, conservation status, and natural history notes." />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Species Directory – The Verdant Page" />
+        <meta property="og:description" content="A field guide to wildlife, plants, and fungi — ecology, conservation status, and natural history notes." />
+        <meta property="og:url" content={window.location.href} />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="Species Directory – The Verdant Page" />
+        <meta name="twitter:description" content="A field guide to wildlife, plants, and fungi — ecology, conservation status, and natural history notes." />
+      </Helmet>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mb-16">
           <h1 className="font-serif text-5xl md:text-6xl text-foreground mb-6 tracking-tight">Species Spotlight</h1>

@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { useGetFeaturedArticles, useGetArticleStats, getGetFeaturedArticlesQueryKey, getGetArticleStatsQueryKey } from "@workspace/api-client-react";
 import { ArticleCard } from "@/components/ui/article-card";
 import { Button } from "@/components/ui/button";
@@ -58,6 +59,19 @@ export default function Home() {
 
   return (
     <div className="w-full">
+      <Helmet>
+        <title>The Verdant Page – Nature Writing</title>
+        <meta name="description" content="Science and storytelling from the natural world. Rigorous science wrapped in lyrical prose." />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="The Verdant Page – Nature Writing" />
+        <meta property="og:description" content="Science and storytelling from the natural world. Rigorous science wrapped in lyrical prose." />
+        <meta property="og:url" content={window.location.href} />
+        <meta property="og:image" content="/opengraph.jpg" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="The Verdant Page – Nature Writing" />
+        <meta name="twitter:description" content="Science and storytelling from the natural world. Rigorous science wrapped in lyrical prose." />
+        <meta name="twitter:image" content="/opengraph.jpg" />
+      </Helmet>
       {/* Hero Section */}
       <section className="relative min-h-[90vh] flex items-center pt-20 overflow-hidden">
         <div className="absolute inset-0 z-0">

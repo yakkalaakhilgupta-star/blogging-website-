@@ -12,12 +12,9 @@ export function Layout({ children }: LayoutProps) {
   return (
     <>
       <Helmet>
-        <link
-          rel="alternate"
-          type="application/rss+xml"
-          title="The Verdant Page – RSS Feed"
-          href="/api/feed.xml"
-        />
+        <link rel="alternate" type="application/rss+xml" title="The Verdant Page – RSS Feed" href="/api/feed.xml" />
+        <meta property="og:site_name" content="The Verdant Page" />
+        <meta property="og:locale" content="en_GB" />
       </Helmet>
       <div className="flex min-h-screen flex-col bg-background text-foreground">
         <Navbar />
