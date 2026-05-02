@@ -9,6 +9,7 @@ import portfolioRouter from "./portfolio";
 import contactRouter from "./contact";
 import newsletterRouter from "./newsletter";
 import feedRouter from "./feed";
+import analyticsRouter from "./analytics";
 
 const router: IRouter = Router();
 
@@ -40,5 +41,6 @@ router.use(portfolioRouter);
 router.use(contactRouter);
 router.use(newsletterRouter);
 router.use(feedRouter);
+router.use(analyticsRouter);
 
 export default router;

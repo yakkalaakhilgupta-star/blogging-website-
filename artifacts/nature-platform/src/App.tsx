@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/layout/Layout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import NotFound from "@/pages/not-found";
+import { usePageAnalytics } from "@/hooks/usePageAnalytics";
 
 // Pages
 import Home from "@/pages/Home";
@@ -31,6 +32,7 @@ const queryClient = new QueryClient({
 });
 
 function Router() {
+  usePageAnalytics();
   return (
     <Layout>
       <ErrorBoundary>
