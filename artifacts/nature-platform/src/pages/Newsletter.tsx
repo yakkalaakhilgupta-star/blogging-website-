@@ -15,7 +15,7 @@ export default function Newsletter() {
     if (!email || isSubscribing) return;
     setIsSubscribing(true);
     try {
-      const res = await fetch("/api/newsletter/subscribe", {
+      const res = await fetch("/api/newsletter", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, name: name || undefined }),
