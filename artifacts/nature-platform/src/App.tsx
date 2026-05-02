@@ -26,6 +26,19 @@ import Unsubscribe from "@/pages/Unsubscribe";
 import AdminMessages from "@/pages/AdminMessages";
 import Privacy from "@/pages/Privacy";
 import Terms from "@/pages/Terms";
+import ReadingList from "@/pages/ReadingList";
+import NewsletterConfirmed from "@/pages/NewsletterConfirmed";
+import { useWebVitals } from "@/hooks/useWebVitals";
+
+// Admin pages
+import AdminArticles from "@/pages/admin/AdminArticles";
+import AdminArticleEdit from "@/pages/admin/AdminArticleEdit";
+import AdminSpecies from "@/pages/admin/AdminSpecies";
+import AdminSpeciesEdit from "@/pages/admin/AdminSpeciesEdit";
+import AdminPortfolio from "@/pages/admin/AdminPortfolio";
+import AdminTags from "@/pages/admin/AdminTags";
+import AdminAnalytics from "@/pages/admin/AdminAnalytics";
+import AdminNewsletter from "@/pages/admin/AdminNewsletter";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -36,8 +49,32 @@ const queryClient = new QueryClient({
   },
 });
 
-function Router() {
+// Admin routes rendered outside Layout (have their own layout)
+function AdminRouter() {
   usePageAnalytics();
+  useWebVitals();
+  return (
+    <ErrorBoundary>
+      <Switch>
+        <Route path="/admin/articles" component={AdminArticles} />
+        <Route path="/admin/articles/new" component={AdminArticleEdit} />
+        <Route path="/admin/articles/:slug/edit" component={AdminArticleEdit} />
+        <Route path="/admin/species" component={AdminSpecies} />
+        <Route path="/admin/species/new" component={AdminSpeciesEdit} />
+        <Route path="/admin/species/:slug/edit" component={AdminSpeciesEdit} />
+        <Route path="/admin/portfolio" component={AdminPortfolio} />
+        <Route path="/admin/tags" component={AdminTags} />
+        <Route path="/admin/analytics" component={AdminAnalytics} />
+        <Route path="/admin/newsletter" component={AdminNewsletter} />
+        <Route path="/admin/messages" component={AdminMessages} />
+      </Switch>
+    </ErrorBoundary>
+  );
+}
+
+function PublicRouter() {
+  usePageAnalytics();
+  useWebVitals();
   return (
     <Layout>
       <ErrorBoundary>
@@ -53,10 +90,11 @@ function Router() {
           <Route path="/about" component={About} />
           <Route path="/contact" component={Contact} />
           <Route path="/newsletter" component={Newsletter} />
+          <Route path="/newsletter/confirmed" component={NewsletterConfirmed} />
           <Route path="/unsubscribe" component={Unsubscribe} />
-          <Route path="/admin/messages" component={AdminMessages} />
           <Route path="/privacy" component={Privacy} />
           <Route path="/terms" component={Terms} />
+          <Route path="/reading-list" component={ReadingList} />
           <Route component={NotFound} />
         </Switch>
       </ErrorBoundary>
@@ -66,6 +104,7 @@ function Router() {
 
 function App() {
   const [searchOpen, setSearchOpen] = useState(false);
+  const [location, setLocation] = useState(window.location.pathname);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -78,6 +117,8 @@ function App() {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
+  const isAdminPath = location.startsWith("/admin");
+
   return (
     <SearchContext.Provider
       value={{
@@ -88,8 +129,11 @@ function App() {
     >
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <Router />
+          <WouterRouter
+            base={import.meta.env.BASE_URL.replace(/\/$/, "")}
+            onChange={setLocation}
+          >
+            {isAdminPath ? <AdminRouter /> : <PublicRouter />}
           </WouterRouter>
           <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
           <Toaster />

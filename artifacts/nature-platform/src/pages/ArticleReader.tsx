@@ -1,7 +1,7 @@
 import { useParams, Link } from "wouter";
 import { useGetArticle, getGetArticleQueryKey } from "@workspace/api-client-react";
 import { format } from "date-fns";
-import { ArrowLeft, Clock, Calendar, Tag, Twitter, Linkedin, Link as LinkIcon, Eye } from "lucide-react";
+import { ArrowLeft, Clock, Calendar, Tag, Twitter, Linkedin, Link as LinkIcon, Eye, Bookmark, BookmarkCheck } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,12 +12,14 @@ import { ReadingProgressBar } from "@/components/article/ReadingProgressBar";
 import { TableOfContents, useHeadings } from "@/components/article/TableOfContents";
 import { ArticleMarkdown } from "@/components/article/ArticleMarkdown";
 import { RelatedArticles } from "@/components/article/RelatedArticles";
+import { useBookmarks } from "@/hooks/useBookmarks";
 
 export default function ArticleReader() {
   const params = useParams<{ slug: string }>();
   const slug = params.slug || "";
   const { toast } = useToast();
   const [fontSize, setFontSize] = useState(18);
+  const { isBookmarked, toggleBookmark } = useBookmarks();
 
   const { data: article, isLoading, error } = useGetArticle(slug, {
     query: {
@@ -162,7 +164,7 @@ export default function ArticleReader() {
               <Tag className="h-4 w-4 mr-2 text-primary" />
               <span className="uppercase tracking-wider text-xs">{article.category}</span>
             </div>
-            {/* Font size controls */}
+            {/* Font size controls + bookmark */}
             <div className="flex items-center gap-2 ml-auto">
               <span className="text-xs uppercase tracking-wider">Text:</span>
               <button
@@ -175,6 +177,23 @@ export default function ArticleReader() {
                 className="h-7 w-7 flex items-center justify-center border border-border hover:bg-muted text-base font-bold"
                 title="Increase font size"
               >A+</button>
+              <button
+                onClick={() => {
+                  toggleBookmark(article.slug);
+                  toast({
+                    title: isBookmarked(article.slug) ? "Removed from reading list" : "Saved to reading list",
+                    description: isBookmarked(article.slug) ? undefined : "Find it in your reading list.",
+                  });
+                }}
+                className={`h-7 w-7 flex items-center justify-center border hover:bg-muted transition-colors ml-1 ${
+                  isBookmarked(article.slug) ? "border-primary text-primary bg-primary/5" : "border-border text-muted-foreground"
+                }`}
+                title={isBookmarked(article.slug) ? "Remove bookmark" : "Save to reading list"}
+              >
+                {isBookmarked(article.slug)
+                  ? <BookmarkCheck className="h-3.5 w-3.5" />
+                  : <Bookmark className="h-3.5 w-3.5" />}
+              </button>
             </div>
           </div>
         </header>

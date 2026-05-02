@@ -70,3 +70,13 @@ externalPort = 3000
 
 [nix]
 channel = "stable-25_05"
+
+[userenv]
+
+[userenv.production]
+SITE_URL = "https://theverdantpage.com"
+NODE_ENV = "production"
+
+[userenv.development]
+SITE_URL = "http://localhost:22885"
+NODE_ENV = "development"

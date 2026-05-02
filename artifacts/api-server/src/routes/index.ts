@@ -11,6 +11,7 @@ import newsletterRouter from "./newsletter";
 import feedRouter from "./feed";
 import analyticsRouter from "./analytics";
 import sitemapRouter from "./sitemap";
+import vitalsRouter from "./vitals";
 
 const router: IRouter = Router();
 
@@ -44,5 +45,6 @@ router.use(newsletterRouter);
 router.use(feedRouter);
 router.use(analyticsRouter);
 router.use(sitemapRouter);
+router.use(vitalsRouter);
 
 export default router;

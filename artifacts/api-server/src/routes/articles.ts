@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { articlesTable, articleTagsTable, tagsTable } from "@workspace/db";
-import { eq, ilike, sql, and, inArray } from "drizzle-orm";
+import { eq, ilike, sql, and, inArray, lt } from "drizzle-orm";
+import { pool } from "@workspace/db";
 import {
   ListArticlesQueryParams,
   CreateArticleBody,
@@ -30,10 +31,47 @@ async function attachTags(articles: (typeof articlesTable.$inferSelect)[]) {
   return articles.map((a) => ({ ...a, tags: tagMap.get(a.id) ?? [] }));
 }
 
+// Full-text search endpoint
+router.get("/articles/search", async (req, res) => {
+  const q = req.query.q as string;
+  const limitParam = Number(req.query.limit) || 10;
+  if (!q || q.trim().length < 2) {
+    res.json({ articles: [], total: 0 });
+    return;
+  }
+  try {
+    const result = await pool.query(
+      `SELECT * FROM articles
+       WHERE status = 'published'
+         AND (
+           to_tsvector('english', title || ' ' || content || ' ' || excerpt) @@ plainto_tsquery('english', $1)
+           OR title ILIKE $2
+         )
+       ORDER BY
+         ts_rank(to_tsvector('english', title || ' ' || content || ' ' || excerpt), plainto_tsquery('english', $1)) DESC,
+         published_at DESC
+       LIMIT $3`,
+      [q, `%${q}%`, limitParam]
+    );
+    const articles = result.rows.map((r) => ({
+      id: r.id, title: r.title, slug: r.slug, excerpt: r.excerpt,
+      category: r.category, imageUrl: r.image_url, imageAlt: r.image_alt,
+      readTime: r.read_time, featured: r.featured, status: r.status,
+      viewCount: r.view_count, publishedAt: r.published_at,
+      updatedAt: r.updated_at, createdAt: r.created_at,
+    }));
+    res.json({ articles, total: articles.length });
+  } catch (err) {
+    console.error("[search] Error:", err);
+    res.status(500).json({ error: "Search failed" });
+  }
+});
+
 router.get("/articles", async (req, res) => {
   const parsed = ListArticlesQueryParams.safeParse(req.query);
   if (!parsed.success) { res.status(400).json({ error: parsed.error }); return; }
   const { category, tag, featured, status, limit, offset, search } = parsed.data;
+  const cursor = req.query.cursor ? Number(req.query.cursor) : undefined;
 
   const conditions = [];
   if (category) conditions.push(eq(articlesTable.category, category));
@@ -41,6 +79,8 @@ router.get("/articles", async (req, res) => {
   if (status) conditions.push(eq(articlesTable.status, status));
   else conditions.push(eq(articlesTable.status, "published"));
   if (search) conditions.push(ilike(articlesTable.title, `%${search}%`));
+  // Cursor-based pagination: get articles published before the cursor article
+  if (cursor) conditions.push(lt(articlesTable.id, cursor));
 
   const where = and(...conditions);
 
@@ -52,7 +92,7 @@ router.get("/articles", async (req, res) => {
       .innerJoin(tagsTable, eq(articleTagsTable.tagId, tagsTable.id))
       .where(eq(tagsTable.slug, tag));
     articleIds = tagRows.map((r) => r.articleId);
-    if (articleIds.length === 0) { res.json({ articles: [], total: 0 }); return; }
+    if (articleIds.length === 0) { res.json({ articles: [], total: 0, nextCursor: null }); return; }
   }
 
   const finalWhere = articleIds
@@ -61,12 +101,29 @@ router.get("/articles", async (req, res) => {
 
   const [rawArticles, countResult] = await Promise.all([
     db.select().from(articlesTable).where(finalWhere)
-      .orderBy(sql`${articlesTable.publishedAt} desc`).limit(limit).offset(offset),
-    db.select({ count: sql<number>`count(*)` }).from(articlesTable).where(finalWhere),
+      .orderBy(sql`${articlesTable.publishedAt} desc`).limit(limit).offset(cursor ? 0 : offset),
+    db.select({ count: sql<number>`count(*)` }).from(articlesTable).where(
+      // Count without cursor for accurate total
+      articleIds
+        ? and(
+            category ? eq(articlesTable.category, category) : undefined,
+            featured !== undefined ? eq(articlesTable.featured, featured) : undefined,
+            status ? eq(articlesTable.status, status) : eq(articlesTable.status, "published"),
+            search ? ilike(articlesTable.title, `%${search}%`) : undefined,
+            inArray(articlesTable.id, articleIds)
+          )
+        : and(
+            category ? eq(articlesTable.category, category) : undefined,
+            featured !== undefined ? eq(articlesTable.featured, featured) : undefined,
+            status ? eq(articlesTable.status, status) : eq(articlesTable.status, "published"),
+            search ? ilike(articlesTable.title, `%${search}%`) : undefined,
+          )
+    ),
   ]);
 
   const articles = await attachTags(rawArticles);
-  res.json({ articles, total: Number(countResult[0]?.count ?? 0) });
+  const nextCursor = rawArticles.length === limit ? rawArticles[rawArticles.length - 1].id : null;
+  res.json({ articles, total: Number(countResult[0]?.count ?? 0), nextCursor });
 });
 
 router.get("/articles/featured", async (_req, res) => {

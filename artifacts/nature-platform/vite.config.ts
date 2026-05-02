@@ -63,6 +63,10 @@ export default defineConfig({
       "react",
       "react-dom",
       "@tanstack/react-query",
+      "@uiw/react-md-editor",
+      "@uiw/react-markdown-preview",
+      "recharts",
+      "web-vitals",
     ],
   },
   server: {
