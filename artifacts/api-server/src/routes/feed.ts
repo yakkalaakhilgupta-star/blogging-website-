@@ -24,6 +24,8 @@ router.get("/feed.xml", async (req, res) => {
 
   const baseUrl = process.env.SITE_URL || `https://${req.hostname}`;
 
+  const siteAuthor = process.env.SITE_AUTHOR || "The Verdant Page";
+
   const items = articles
     .map((article) => {
       const pubDate = new Date(article.publishedAt).toUTCString();
@@ -34,6 +36,7 @@ router.get("/feed.xml", async (req, res) => {
       <link>${escapeXml(link)}</link>
       <guid isPermaLink="true">${escapeXml(link)}</guid>
       <description>${escapeXml(article.excerpt)}</description>
+      <dc:creator>${escapeXml(siteAuthor)}</dc:creator>
       <category>${escapeXml(article.category)}</category>
       <pubDate>${pubDate}</pubDate>
       ${article.imageUrl ? `<enclosure url="${escapeXml(article.imageUrl)}" type="image/jpeg" length="0" />` : ""}
@@ -42,7 +45,7 @@ router.get("/feed.xml", async (req, res) => {
     .join("\n    ");
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
     <title>The Verdant Page</title>
     <link>${escapeXml(baseUrl)}</link>
