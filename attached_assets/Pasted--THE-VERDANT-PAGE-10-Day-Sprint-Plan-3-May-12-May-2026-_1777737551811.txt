@@ -1,0 +1,182 @@
+
+THE VERDANT PAGE
+10-Day Sprint Plan
+3 May – 12 May 2026  |  From Sprint 1 Complete to Launch-Ready
+
+3
+Phases	18
+Features	10
+Days	0
+Days Slack
+
+Sprint Overview
+This plan takes The Verdant Page from its current Sprint 1 baseline to a fully self-sufficient, launch-ready platform in 10 working days. Each day has a clear focus and checkbox task list. The three phases are:
+
+Phase	Days	Focus
+Phase 1: Foundation	Days 1–3	Quick wins, legal pages, email infrastructure (Resend), double opt-in, DB backup
+Phase 2: Core Features	Days 4–7	Full admin CMS (articles, species, portfolio), markdown editor, full-text search, Cmd+K, pagination
+Phase 3: Polish & Launch	Days 8–10	Analytics dashboard, newsletter broadcast UI, bookmarking, SEO audit, Lighthouse, QA, release tag
+
+	Rule:  Each day ends with a working, committed build. No feature is left half-done overnight.
+
+Day-by-Day Plan
+
+PHASE 1 — Foundation  (Days 1–3)
+
+	Day 1  Sat 3 May   |   Foundation
+☐	Set up automated daily PostgreSQL backup (pg_dump cron or Replit scheduled job)
+☐	Create robots.txt in frontend public/ with correct directives
+☐	Add GET /api/sitemap.xml endpoint — lists all published article and species slugs
+☐	Add JSON-LD Article schema markup inside ArticleReader page
+☐	Create a bare-bones Privacy Policy page (/privacy) — template is fine for now
+☐	Create a bare-bones Terms of Service page (/terms)
+☐	Add links to Privacy + Terms in the Footer component
+
+	Day 2  Sun 4 May   |   Foundation
+☐	Integrate Resend SDK into the API server (install, add RESEND_API_KEY env var)
+☐	Build sendEmail(to, subject, html) utility function in api-server/src/lib/
+☐	Trigger welcome email when a new newsletter subscriber is created (POST /api/newsletter)
+☐	Build reusable branded HTML email template (logo, green header, footer with unsubscribe link)
+☐	Add unsubscribe confirmation email when POST /api/newsletter/unsubscribe is called
+☐	Test all email flows end-to-end in Resend sandbox
+
+	Day 3  Mon 5 May   |   Foundation
+☐	Implement double opt-in flow: on signup send confirmation email with signed token link
+☐	Add GET /api/newsletter/confirm?token=... endpoint — sets confirmed=true on subscriber
+☐	Add confirmed column to newsletter_subs table (Drizzle migration)
+☐	Only send broadcast emails to confirmed subscribers
+☐	Add /newsletter/confirmed landing page (success screen after clicking email link)
+☐	Add cookie consent banner component — shown on first visit, stored in localStorage
+
+PHASE 2 — Core Features  (Days 4–7)
+
+	Day 4  Tue 6 May   |   Core Features
+☐	Build Admin Article List page (/admin/articles) — table of all articles with edit/delete buttons
+☐	Add Article Create form (/admin/articles/new) — title, category, tags, status, image URL, markdown body
+☐	Wire Create form to POST /api/articles (existing endpoint, now has a UI)
+☐	Add Article Edit form (/admin/articles/:slug/edit) — pre-filled from GET /api/articles/:slug
+☐	Wire Edit form to PUT /api/articles/:slug
+☐	Gate all /admin/* routes behind the existing admin secret key check
+
+	Day 5  Wed 7 May   |   Core Features
+☐	Embed a Markdown editor in the Article Create/Edit forms (use @uiw/react-md-editor — no backend needed)
+☐	Add live split-pane preview (editor left, rendered markdown right) using existing ArticleMarkdown component
+☐	Add Draft Preview button on edit form — opens /articles/:slug in a new tab (backend already supports status=draft)
+☐	Add image URL field with inline thumbnail preview so editors can verify the image before saving
+☐	Add word count + estimated read time display that updates as the editor content changes
+
+	Day 6  Thu 8 May   |   Core Features
+☐	Build Admin Species List page (/admin/species) — table with edit/delete
+☐	Add Species Create/Edit form wired to existing POST/PUT /api/species endpoints
+☐	Build Portfolio Admin UI (/admin/portfolio) — list clips, add new clip form, delete button
+☐	Wire Portfolio form to existing POST /api/portfolio and DELETE /api/portfolio/:id endpoints
+☐	Add Category & Tag management UI (/admin/tags) — create and list tags, create categories
+☐	Update the admin navigation sidebar to link all new admin pages
+
+	Day 7  Fri 9 May   |   Core Features
+☐	Implement full-text search using PostgreSQL tsvector on articles (title + content)
+☐	Add search_vector column and GIN index to articles table (Drizzle migration)
+☐	Add GET /api/articles/search?q= endpoint using ts_query
+☐	Build Global Search Overlay (Cmd+K) — modal with text input, live results, keyboard navigation
+☐	Search results show article title, category, and excerpt snippet
+☐	Implement cursor-based pagination on GET /api/articles (add cursor param, return nextCursor)
+☐	Update Articles page to use infinite scroll / Load More button with the new cursor pagination
+
+PHASE 3 — Polish & Launch-Ready  (Days 8–10)
+
+	Day 8  Sat 10 May   |   Polish & Launch-Ready
+☐	Build Analytics Dashboard UI (/admin/analytics) — fetch from GET /api/analytics/summary
+☐	Display: total page views, top 10 articles by views, views over last 30 days (line chart using recharts)
+☐	Display: subscriber count, subscriber growth over time
+☐	Add newsletter broadcast UI (/admin/newsletter/send) — subject + body (markdown), preview, send to all confirmed
+☐	Build POST /api/newsletter/broadcast endpoint — loops confirmed subscribers, sends via Resend
+☐	Add subscriber management table (/admin/newsletter/subscribers) — list, show confirmed status, delete
+
+	Day 9  Sun 11 May   |   Polish & Launch-Ready
+☐	Implement article bookmarking — save article slugs to localStorage, show saved count in Navbar
+☐	Add /reading-list page that renders bookmarked articles fetched by slug
+☐	Add canonical URL meta tag to paginated article list pages (page 2, 3...)
+☐	Audit all pages for missing SEO meta — fill any gaps in react-helmet-async usage
+☐	Add Web Vitals reporting: import reportWebVitals and POST metrics to /api/analytics/vitals
+☐	Add GET /api/analytics/vitals summary to analytics dashboard
+☐	Set up uptime monitoring — configure a free external ping (e.g. UptimeRobot) on the health endpoint
+
+	Day 10  Mon 12 May   |   Polish & Launch-Ready
+☐	Full end-to-end QA pass: create article, publish, view on site, share, search, subscribe, receive email
+☐	Run Lighthouse audit on Home, ArticleReader, and Species pages — fix any score below 80
+☐	Verify all admin endpoints still require Bearer token after UI changes
+☐	Check RSS feed validates at validator.w3.org/feed/
+☐	Verify sitemap.xml is reachable and lists all published content
+☐	Confirm database backup ran and the backup file is accessible
+☐	Update ALLOWED_ORIGINS env var to production domain only
+☐	Tag release: git tag v1.0.0 and push — The Verdant Page is launch-ready
+
+Full Feature Checklist
+
+Feature	Day	Category
+☐  Automated DB backup (pg_dump cron)	Day 1	Infrastructure
+☐  robots.txt	Day 1	SEO
+☐  sitemap.xml endpoint	Day 1	SEO
+☐  JSON-LD Article schema in ArticleReader	Day 1	SEO
+☐  Privacy Policy page (/privacy)	Day 1	Legal
+☐  Terms of Service page (/terms)	Day 1	Legal
+☐  Resend SDK integration + sendEmail utility	Day 2	Email
+☐  Welcome email on newsletter signup	Day 2	Email
+☐  Branded HTML email template	Day 2	Email
+☐  Unsubscribe confirmation email	Day 2	Email
+☐  Double opt-in confirmation flow	Day 3	Email
+☐  confirmed column on newsletter_subs	Day 3	Database
+☐  Cookie consent banner	Day 3	Legal / UX
+☐  Admin Article List UI (/admin/articles)	Day 4	CMS
+☐  Article Create form + API wiring	Day 4	CMS
+☐  Article Edit form + API wiring	Day 4	CMS
+☐  Markdown editor with live preview	Day 5	CMS
+☐  Draft Preview button	Day 5	CMS
+☐  Admin Species CRUD UI	Day 6	CMS
+☐  Portfolio Admin UI	Day 6	CMS
+☐  Category & Tag management UI	Day 6	CMS
+☐  Full-text search (PostgreSQL tsvector)	Day 7	Search
+☐  GET /api/articles/search?q= endpoint	Day 7	Search
+☐  Global Search Overlay (Cmd+K)	Day 7	Search / UX
+☐  Cursor-based pagination on articles API	Day 7	Performance
+☐  Infinite scroll / Load More on Articles page	Day 7	UX
+☐  Analytics Dashboard UI	Day 8	Analytics
+☐  Newsletter broadcast UI + endpoint	Day 8	Email
+☐  Subscriber management table	Day 8	Email
+☐  Article bookmarking (localStorage)	Day 9	UX
+☐  /reading-list page	Day 9	UX
+☐  Canonical URL on paginated pages	Day 9	SEO
+☐  Web Vitals reporting	Day 9	Performance
+☐  Uptime monitoring (external ping)	Day 9	Reliability
+☐  Full QA pass + Lighthouse audit	Day 10	QA
+☐  Production env var lockdown	Day 10	Security
+☐  v1.0.0 release tag	Day 10	Release
+
+Risks & Mitigations
+
+Risk	Likelihood	Mitigation
+Resend email API setup takes longer than expected	Medium	Use Resend sandbox for Day 2; real sending not needed until Day 3 double opt-in
+Markdown editor library has styling conflicts with Tailwind	Low	@uiw/react-md-editor isolates its CSS; test in a sandbox component first
+tsvector migration fails on large articles table	Low	Run migration in a transaction; add search_vector in a separate non-blocking ALTER
+Day 10 Lighthouse score below 80	Medium	Defer bookmarking/vitals to post-sprint if needed; keep QA day clear for fixes
+No buffer day if a feature slips	High	Keep Day 10 tasks light; if Day 9 slips, cut bookmarking (lowest-impact feature)
+
+Definition of Done
+The sprint is complete when ALL of the following are true:
+
+•	Automated daily database backup is running and verified
+•	Privacy Policy and Terms of Service pages are live
+•	sitemap.xml and robots.txt are reachable
+•	JSON-LD Article schema is present on all article pages
+•	Welcome email and double opt-in confirmation email are sending via Resend
+•	Admin can create, edit, and delete articles entirely through the UI
+•	Admin can create, edit, and delete species and portfolio clips through the UI
+•	Full-text search works on /articles and via Cmd+K overlay
+•	Article list uses cursor-based pagination
+•	Analytics dashboard shows page views and subscriber growth
+•	Newsletter broadcast can be sent to all confirmed subscribers from the admin UI
+•	Cookie consent banner is shown to first-time visitors
+•	Lighthouse scores on key pages are 80+ on Performance, 90+ on SEO and Accessibility
+•	All admin endpoints require Bearer token — verified with a direct curl test
+
+The Verdant Page  |  10-Day Sprint  |  3–12 May 2026
