@@ -124,6 +124,7 @@ export default function SpeciesProfile() {
                 src={species.imageUrl}
                 alt={species.commonName}
                 loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover"
               />
             </div>

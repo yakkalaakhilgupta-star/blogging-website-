@@ -25,6 +25,7 @@ export function ArticleCard({ article, featured = false }: ArticleCardProps) {
                   <img
                     src={article.imageUrl}
                     alt={article.title}
+                    loading="lazy"
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                 ) : (
@@ -77,6 +78,7 @@ export function ArticleCard({ article, featured = false }: ArticleCardProps) {
               <img
                 src={article.imageUrl}
                 alt={article.title}
+                loading="lazy"
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
             ) : (
