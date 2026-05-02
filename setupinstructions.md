@@ -407,32 +407,49 @@ Every public page has a full set of meta tags injected via `react-helmet-async`:
 
 - `<title>` and `<meta name="description">`
 - `<link rel="canonical">` — absolute URL
-- Open Graph tags (`og:title`, `og:description`, `og:url`, `og:image`, `og:type`)
-- Twitter Card tags (`twitter:card`, `twitter:title`, `twitter:description`, `twitter:image`)
+- Open Graph: `og:type`, `og:title`, `og:description`, `og:url`, `og:image` (always absolute, always has a fallback to `/opengraph.jpg`)
+- Twitter Card: `twitter:card="summary_large_image"`, `twitter:title`, `twitter:description`, `twitter:image`
 - JSON-LD structured data (schema.org)
+- `<meta name="robots" content="noindex">` on utility pages (Privacy, Terms, ReadingList, 404)
+
+### Article pages additionally include
+
+- `article:published_time`, `article:modified_time` (real `updatedAt` timestamp)
+- `article:section` (category), `article:author`, `article:tag` — one tag per article tag
+- `meta name="author"`
 
 ### JSON-LD schemas by page
 
-| Page | Schema type |
+| Page | Schema(s) |
 |---|---|
 | Home | `WebSite` + `SearchAction` (enables Google sitelinks search box) |
-| About | `Person` (expertise, memberships, education, location) |
-| Services | `ProfessionalService` + `OfferCatalog` |
+| About | `Person` (job title, expertise, memberships, education, location) |
+| Services | `ProfessionalService` + `OfferCatalog` (all 5 service offerings) |
 | Contact | `ContactPage` |
-| Articles | `CollectionPage` |
+| Articles list | `CollectionPage` |
 | Portfolio | `CollectionPage` |
-| Species | `CollectionPage` |
-| Article pages | `Article` (title, author, dates, image, description) |
+| Species list | `CollectionPage` |
+| Species profiles | `Taxon` (scientific name, common name, IUCN conservation status link) |
+| Membership | Full OG + Twitter meta block |
+| Article pages | `Article` (headline, dates, author, image, read time, section) + `BreadcrumbList` |
+
+The `BreadcrumbList` on article pages generates the trail:
+`The Verdant Page → Essays → [Article Title]`
+which Google displays directly in search results beneath the article title.
 
 ### Sitemap & RSS
 
-- **Sitemap**: `GET /api/sitemap.xml` — includes all published articles, species, and static pages. Referenced in `robots.txt`.
-- **RSS feed**: `GET /api/feed.xml` — RSS 2.0 feed. Autodiscovery `<link>` tag is injected on every page via `Layout.tsx`.
-- **robots.txt**: Located at `public/robots.txt`. Blocks `/admin/` and `/api/` from crawlers but explicitly allows `/api/sitemap.xml`.
+- **Sitemap**: `GET /api/sitemap.xml` — all published articles (newest first), species (alphabetical), and static pages. Deterministic ordering on every request. Referenced in `robots.txt`.
+- **RSS feed**: `GET /api/feed.xml` — RSS 2.0 feed with full article metadata. Autodiscovery `<link>` tag injected on every page via `Layout.tsx`.
+- **robots.txt**: at `public/robots.txt`. Blocks `/admin/` and `/api/` but has `Allow: /api/sitemap.xml` so crawlers can always reach the sitemap.
 
 ### OG image
 
-The default Open Graph image is at `public/opengraph.jpg`. Article pages use the article's own cover image when available.
+The default Open Graph image is at `public/opengraph.jpg`. All pages fall back to this if they have no specific image. Article pages use the article's cover image when available; species profile pages use the species image when available.
+
+### After deploying
+
+Set `SITE_URL` to your production domain so the sitemap and all email links use the correct absolute URLs instead of `localhost`.
 
 ---
 
