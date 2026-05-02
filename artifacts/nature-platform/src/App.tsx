@@ -28,6 +28,9 @@ import Privacy from "@/pages/Privacy";
 import Terms from "@/pages/Terms";
 import ReadingList from "@/pages/ReadingList";
 import NewsletterConfirmed from "@/pages/NewsletterConfirmed";
+import Membership from "@/pages/Membership";
+import MembershipSuccess from "@/pages/MembershipSuccess";
+import MembershipCancel from "@/pages/MembershipCancel";
 import { useWebVitals } from "@/hooks/useWebVitals";
 
 // Admin pages
@@ -39,6 +42,8 @@ import AdminPortfolio from "@/pages/admin/AdminPortfolio";
 import AdminTags from "@/pages/admin/AdminTags";
 import AdminAnalytics from "@/pages/admin/AdminAnalytics";
 import AdminNewsletter from "@/pages/admin/AdminNewsletter";
+import AdminComments from "@/pages/admin/AdminComments";
+import AdminSeries from "@/pages/admin/AdminSeries";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -67,6 +72,8 @@ function AdminRouter() {
         <Route path="/admin/analytics" component={AdminAnalytics} />
         <Route path="/admin/newsletter" component={AdminNewsletter} />
         <Route path="/admin/messages" component={AdminMessages} />
+        <Route path="/admin/comments" component={AdminComments} />
+        <Route path="/admin/series" component={AdminSeries} />
       </Switch>
     </ErrorBoundary>
   );
@@ -95,6 +102,9 @@ function PublicRouter() {
           <Route path="/privacy" component={Privacy} />
           <Route path="/terms" component={Terms} />
           <Route path="/reading-list" component={ReadingList} />
+          <Route path="/membership" component={Membership} />
+          <Route path="/membership/success" component={MembershipSuccess} />
+          <Route path="/membership/cancel" component={MembershipCancel} />
           <Route component={NotFound} />
         </Switch>
       </ErrorBoundary>

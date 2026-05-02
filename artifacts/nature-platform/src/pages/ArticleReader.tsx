@@ -13,6 +13,9 @@ import { TableOfContents, useHeadings } from "@/components/article/TableOfConten
 import { ArticleMarkdown } from "@/components/article/ArticleMarkdown";
 import { RelatedArticles } from "@/components/article/RelatedArticles";
 import { useBookmarks } from "@/hooks/useBookmarks";
+import { AuthorBio } from "@/components/article/AuthorBio";
+import { CommentsSection } from "@/components/article/CommentsSection";
+import { SeriesNav } from "@/components/article/SeriesNav";
 
 export default function ArticleReader() {
   const params = useParams<{ slug: string }>();
@@ -289,8 +292,24 @@ export default function ArticleReader() {
               </div>
             )}
 
+            {/* Series Navigation */}
+            {(article as any).seriesId && (
+              <SeriesNav
+                articleSlug={article.slug}
+                seriesId={(article as any).seriesId}
+                seriesTitle={(article as any).seriesTitle}
+                seriesSlug={(article as any).seriesSlug}
+              />
+            )}
+
+            {/* Author Bio */}
+            <AuthorBio />
+
             {/* Related Articles */}
             <RelatedArticles currentSlug={article.slug} category={article.category} />
+
+            {/* Comments */}
+            <CommentsSection articleSlug={article.slug} />
 
             {/* Mobile Share */}
             <div className="mt-16 pt-8 border-t border-border lg:hidden">

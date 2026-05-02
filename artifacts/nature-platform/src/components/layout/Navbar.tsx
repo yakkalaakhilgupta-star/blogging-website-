@@ -53,6 +53,17 @@ export function Navbar() {
 
           {/* Right controls */}
           <div className="hidden md:flex items-center gap-2">
+            <Link
+              href="/membership"
+              className={cn(
+                "text-sm font-medium px-4 py-1.5 rounded-full border transition-colors",
+                location === "/membership"
+                  ? "bg-emerald-700 text-white border-emerald-700"
+                  : "border-emerald-700 text-emerald-700 hover:bg-emerald-50"
+              )}
+            >
+              Become a Member
+            </Link>
             <button
               onClick={openSearch}
               className="flex items-center gap-2 h-8 px-3 text-sm text-muted-foreground border border-border/60 bg-muted/40 hover:bg-muted hover:text-foreground transition-colors rounded-sm"

@@ -12,6 +12,9 @@ import feedRouter from "./feed";
 import analyticsRouter from "./analytics";
 import sitemapRouter from "./sitemap";
 import vitalsRouter from "./vitals";
+import commentsRouter from "./comments";
+import seriesRouter from "./series";
+import stripeRouter from "./stripe";
 
 const router: IRouter = Router();
 
@@ -46,5 +49,8 @@ router.use(feedRouter);
 router.use(analyticsRouter);
 router.use(sitemapRouter);
 router.use(vitalsRouter);
+router.use(commentsRouter);
+router.use(seriesRouter);
+router.use(stripeRouter);
 
 export default router;

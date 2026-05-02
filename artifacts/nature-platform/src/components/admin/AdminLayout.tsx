@@ -2,12 +2,14 @@ import { Link, useLocation } from "wouter";
 import { useState } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import {
-  FileText, Leaf, Briefcase, Tag, BarChart2, Mail, LogOut, Menu, X, Lock
+  FileText, Leaf, Briefcase, Tag, BarChart2, Mail, LogOut, Menu, X, Lock, MessageSquare, BookOpen
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/admin/articles", label: "Articles", icon: FileText },
+  { href: "/admin/series", label: "Series", icon: BookOpen },
+  { href: "/admin/comments", label: "Comments", icon: MessageSquare },
   { href: "/admin/species", label: "Species", icon: Leaf },
   { href: "/admin/portfolio", label: "Portfolio", icon: Briefcase },
   { href: "/admin/tags", label: "Tags & Categories", icon: Tag },

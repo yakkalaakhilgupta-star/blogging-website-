@@ -19,6 +19,7 @@ A production-ready nature writing platform (React + Vite frontend + Express API 
 - **Email**: Resend (graceful skip if RESEND_API_KEY not set)
 - **Analytics**: Custom page views + Core Web Vitals (web-vitals)
 - **Charts**: Recharts (admin dashboard)
+- **Payments**: Stripe (stripe + stripe-replit-sync) — requires Stripe integration connected via Replit
 
 ## Running Services
 
@@ -33,29 +34,39 @@ A production-ready nature writing platform (React + Vite frontend + Express API 
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
+- `pnpm --filter @workspace/api-server exec tsx scripts/seed-products.ts` — seed Stripe membership products (run once after connecting Stripe)
 
 ## Architecture
 
 ### Frontend (`artifacts/nature-platform`)
 
 - `src/App.tsx` — PublicRouter (with Layout) vs AdminRouter (without Layout), separated
-- `src/pages/` — all public pages (Home, Articles, ArticleReader, Species, Portfolio, etc.)
-- `src/pages/admin/` — admin CMS (AdminArticles, AdminArticleEdit, AdminSpecies, AdminPortfolio, AdminTags, AdminAnalytics, AdminNewsletter)
-- `src/components/` — shared components (Navbar, Footer, ArticleCard, CookieConsentBanner, etc.)
+- `src/pages/` — all public pages (Home, Articles, ArticleReader, Species, Portfolio, Membership, etc.)
+- `src/pages/admin/` — admin CMS (AdminArticles, AdminArticleEdit, AdminSpecies, AdminPortfolio, AdminTags, AdminAnalytics, AdminNewsletter, AdminComments, AdminSeries)
+- `src/components/` — shared components (Navbar, Footer, ArticleCard, CookieConsentBanner, CommentsSection, SeriesNav, AuthorBio, etc.)
 - `src/hooks/` — useBookmarks, useWebVitals, usePageAnalytics, useAdminAuth
 
 ### API (`artifacts/api-server`)
 
 - `src/routes/articles.ts` — CRUD + cursor pagination + PostgreSQL tsvector full-text search
 - `src/routes/newsletter.ts` — double opt-in signup + confirm endpoint + admin broadcast
+- `src/routes/comments.ts` — GET/POST public comments (moderated), admin PATCH/DELETE
+- `src/routes/series.ts` — article series/collections CRUD + article assignment
+- `src/routes/stripe.ts` — membership checkout, status check, customer portal, products list
 - `src/routes/vitals.ts` — Core Web Vitals ingestion (handles sendBeacon text/plain)
 - `src/routes/analytics.ts` — page view tracking
-- `src/lib/migrations.ts` — startup migrations (confirmed/confirm_token columns, web_vitals table)
+- `src/lib/migrations.ts` — startup migrations (all schema changes applied here)
 - `src/middlewares/adminAuth.ts` — Bearer token admin auth (ADMIN_SECRET env var)
+- `src/stripeClient.ts` — fetches Stripe credentials from Replit connector API
+- `src/webhookHandlers.ts` — Stripe webhook processor (registered BEFORE express.json())
+- `src/stripeStorage.ts` — queries stripe.* schema tables
+- `scripts/seed-products.ts` — creates Verdant Page membership products in Stripe
 
 ### Database Schema
 
-Tables: `articles`, `categories`, `tags`, `article_tags`, `species`, `portfolio_items`, `newsletter_subscribers` (+ confirmed/confirm_token columns via migration), `page_views`, `web_vitals`, `contact_messages`
+Tables: `articles`, `categories`, `tags`, `article_tags`, `species`, `portfolio_items`, `newsletter_subscribers`, `page_views`, `web_vitals`, `contact_messages`, `series`, `comments`, `members`
+
+Stripe-managed tables (in `stripe` schema, auto-created by stripe-replit-sync): `stripe.products`, `stripe.prices`, `stripe.customers`, `stripe.subscriptions`
 
 ## Security
 
@@ -80,7 +91,28 @@ Tables: `articles`, `categories`, `tags`, `article_tags`, `species`, `portfolio_
 
 Navigate to `/admin` and enter the `ADMIN_SECRET` value to log in.
 
-Pages: Articles list/edit, Species list/edit, Portfolio list, Tags, Analytics dashboard, Newsletter subscribers + broadcast.
+Pages: Articles list/edit, Species list/edit, Portfolio list, Tags, Analytics dashboard, Newsletter subscribers + broadcast, Comments moderation, Series management.
+
+## Membership (Stripe)
+
+The `/membership` page shows pricing plans fetched from Stripe. When Stripe is not connected, it shows a "coming soon" state gracefully.
+
+**Setup steps (once):**
+1. Connect Stripe via Replit Integrations tab
+2. Run `pnpm --filter @workspace/api-server exec tsx scripts/seed-products.ts` to create products
+3. Restart the API Server workflow — `syncBackfill()` will sync products to the DB
+
+**Routes:**
+- `GET /api/membership/products` — list active products + prices
+- `POST /api/membership/checkout` — create Stripe Checkout session (`{ priceId, email? }`)
+- `GET /api/membership/status?email=` — check if email has active subscription
+- `POST /api/membership/portal` — create customer portal session (`{ customerId }`)
+- `POST /api/stripe/webhook` — Stripe webhook (registered BEFORE express.json())
+
+**Frontend pages:**
+- `/membership` — pricing page with plan selection + member status checker
+- `/membership/success` — post-checkout success
+- `/membership/cancel` — post-checkout cancel
 
 ## Known Notes
 
@@ -88,3 +120,6 @@ Pages: Articles list/edit, Species list/edit, Portfolio list, Tags, Analytics da
 - `@uiw/react-md-editor` is lazy-loaded and included in `optimizeDeps` + `resolve.dedupe` to prevent double-React
 - Newsletter email sending silently skips if `RESEND_API_KEY` is not configured
 - Health endpoint is at `/api/healthz` (not `/api/health`)
+- Comments are moderated (approved=FALSE by default); admin must approve at `/admin/comments`
+- Stripe webhook route registered BEFORE `express.json()` in `app.ts` — critical for Buffer payload
+- Stripe gracefully degrades: all /api/membership/* endpoints return `stripe_not_configured` error when integration is not connected

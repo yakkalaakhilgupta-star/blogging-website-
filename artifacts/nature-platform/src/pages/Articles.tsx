@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { useListArticles, getListArticlesQueryKey, useListCategories, getListCategoriesQueryKey } from "@workspace/api-client-react";
 import { ArticleCard } from "@/components/ui/article-card";
 import { Input } from "@/components/ui/input";
@@ -6,25 +7,43 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search, SlidersHorizontal, BookOpen, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useQueryClient } from "@tanstack/react-query";
 
 const PAGE_SIZE = 9;
 
+function getParams() {
+  const sp = new URLSearchParams(window.location.search);
+  return {
+    q: sp.get("q") ?? "",
+    category: sp.get("category") ?? "All",
+  };
+}
+
 export default function Articles() {
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [category, setCategory] = useState("All");
+  const [, navigate] = useLocation();
+  const [search, setSearch] = useState(() => getParams().q);
+  const [category, setCategory] = useState(() => getParams().category);
+  const [appliedSearch, setAppliedSearch] = useState(() => getParams().q);
   const [cursor, setCursor] = useState<number | null>(null);
   const [allArticles, setAllArticles] = useState<any[]>([]);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
+  // Sync URL when filters change
+  function pushUrl(q: string, cat: string) {
+    const sp = new URLSearchParams();
+    if (q) sp.set("q", q);
+    if (cat && cat !== "All") sp.set("category", cat);
+    const qs = sp.toString();
+    navigate(`/articles${qs ? `?${qs}` : ""}`, { replace: true });
+  }
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setDebouncedSearch(search);
+    setAppliedSearch(search);
     setCursor(null);
     setAllArticles([]);
     setHasMore(true);
+    pushUrl(search, category);
   };
 
   const handleCategoryChange = (cat: string) => {
@@ -32,69 +51,69 @@ export default function Articles() {
     setCursor(null);
     setAllArticles([]);
     setHasMore(true);
+    pushUrl(appliedSearch, cat);
   };
 
   const { data: categoriesData } = useListCategories({
     query: { queryKey: getListCategoriesQueryKey() }
   });
 
-  const categories = categoriesData ? ["All", ...categoriesData.map(c => c.name)] : ["All"];
+  const categories = categoriesData ? ["All", ...categoriesData.map((c: any) => c.name)] : ["All"];
 
   const { data, isLoading } = useListArticles(
     {
       category: category !== "All" ? category : undefined,
-      search: debouncedSearch || undefined,
+      search: appliedSearch || undefined,
       limit: PAGE_SIZE,
-    },
+    } as any,
     {
       query: {
         queryKey: getListArticlesQueryKey({
           category: category !== "All" ? category : undefined,
-          search: debouncedSearch || undefined,
-        }),
-        onSuccess: (d: any) => {
-          const articles = d?.articles ?? [];
-          if (cursor === null) {
-            setAllArticles(articles);
-          }
-          setHasMore(!!d?.nextCursor && articles.length >= PAGE_SIZE);
-        },
+          search: appliedSearch || undefined,
+        } as any),
       }
     }
   );
 
-  // Merge initial load with cursor pages
-  const displayArticles = cursor === null
-    ? (data?.articles ?? [])
-    : allArticles;
+  // When initial data arrives set allArticles
+  useEffect(() => {
+    if (data && cursor === null) {
+      setAllArticles((data as any)?.articles ?? []);
+      setHasMore(!!(data as any)?.nextCursor);
+    }
+  }, [data, cursor]);
 
-  const total = data?.total ?? 0;
+  const articlesToShow = cursor === null ? ((data as any)?.articles ?? []) : allArticles;
+  const total = (data as any)?.total ?? 0;
 
   async function loadMore() {
     if (loadingMore || !hasMore) return;
-    const lastId = displayArticles[displayArticles.length - 1]?.id;
+    const lastId = articlesToShow[articlesToShow.length - 1]?.id;
     if (!lastId) return;
     setLoadingMore(true);
     try {
       const params = new URLSearchParams();
       if (category !== "All") params.set("category", category);
-      if (debouncedSearch) params.set("search", debouncedSearch);
+      if (appliedSearch) params.set("search", appliedSearch);
       params.set("limit", String(PAGE_SIZE));
       params.set("cursor", String(lastId));
       const r = await fetch(`/api/articles?${params.toString()}`);
       const d = await r.json();
       const newArticles = d.articles ?? [];
-      setAllArticles((prev) => {
-        const merged = [...prev, ...newArticles];
-        return merged;
-      });
+      const merged = [...allArticles, ...newArticles];
+      setAllArticles(merged);
       setCursor(lastId);
       setHasMore(!!d.nextCursor && newArticles.length >= PAGE_SIZE);
     } catch {}
     finally { setLoadingMore(false); }
   }
 
-  const articlesToShow = cursor === null ? (data?.articles ?? []) : allArticles;
+  const clearFilters = () => {
+    setSearch(""); setAppliedSearch(""); setCategory("All");
+    setCursor(null); setAllArticles([]); setHasMore(true);
+    navigate("/articles", { replace: true });
+  };
 
   return (
     <div className="w-full bg-background pt-12 pb-24">
@@ -110,8 +129,8 @@ export default function Articles() {
         {/* Filters and Search */}
         <div className="flex flex-col lg:flex-row gap-6 mb-12 items-start lg:items-center justify-between bg-card p-6 border border-border">
           <div className="flex flex-wrap gap-2 w-full lg:w-auto">
-            {categories.map((cat) => {
-              const catData = categoriesData?.find(c => c.name === cat);
+            {categories.map((cat: string) => {
+              const catData = categoriesData?.find((c: any) => c.name === cat);
               return (
                 <button key={cat} onClick={() => handleCategoryChange(cat)}
                   className={`px-4 py-2 text-sm font-medium transition-colors border flex items-center gap-2 ${
@@ -136,13 +155,16 @@ export default function Articles() {
         </div>
 
         {/* Results count */}
-        <div className="space-y-6 mb-8">
+        <div className="mb-8">
           <div className="flex items-center text-sm font-medium text-muted-foreground">
             <SlidersHorizontal className="h-4 w-4 mr-2" />
             {isLoading ? (
               <Skeleton className="h-4 w-32" />
             ) : (
-              <span>Showing {articlesToShow.length} of {total} articles {category !== "All" && `in ${category}`}</span>
+              <span>
+                Showing {articlesToShow.length} of {total} {category !== "All" ? `articles in ${category}` : "articles"}
+                {appliedSearch && ` matching "${appliedSearch}"`}
+              </span>
             )}
           </div>
         </div>
@@ -163,7 +185,7 @@ export default function Articles() {
         ) : articlesToShow.length > 0 ? (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {articlesToShow.map((article, index) => (
+              {articlesToShow.map((article: any, index: number) => (
                 <motion.div key={article.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: Math.min(index, 5) * 0.08 }} className="h-full">
                   <ArticleCard article={article} />
@@ -171,16 +193,13 @@ export default function Articles() {
               ))}
             </div>
 
-            {/* Load More */}
             {hasMore && articlesToShow.length < total && (
               <div className="flex justify-center mt-16">
                 <button onClick={loadMore} disabled={loadingMore}
                   className="inline-flex items-center gap-2 border border-border px-8 py-3 text-sm font-medium hover:bg-muted transition-colors disabled:opacity-60">
-                  {loadingMore ? (
-                    <><Loader2 className="h-4 w-4 animate-spin" /> Loading…</>
-                  ) : (
-                    <>Load more articles ({total - articlesToShow.length} remaining)</>
-                  )}
+                  {loadingMore
+                    ? <><Loader2 className="h-4 w-4 animate-spin" /> Loading…</>
+                    : <>Load more articles ({total - articlesToShow.length} remaining)</>}
                 </button>
               </div>
             )}
@@ -192,11 +211,8 @@ export default function Articles() {
             <p className="text-muted-foreground text-lg max-w-md mx-auto">
               We couldn't find any articles matching your search criteria.
             </p>
-            {(search || category !== "All") && (
-              <Button variant="outline" className="mt-8" onClick={() => {
-                setSearch(""); setDebouncedSearch(""); setCategory("All");
-                setCursor(null); setAllArticles([]); setHasMore(true);
-              }}>
+            {(appliedSearch || category !== "All") && (
+              <Button variant="outline" className="mt-8" onClick={clearFilters}>
                 Clear all filters
               </Button>
             )}
