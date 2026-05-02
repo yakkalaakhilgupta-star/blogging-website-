@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Switch, Route, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -6,6 +7,8 @@ import { Layout } from "@/components/layout/Layout";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import NotFound from "@/pages/not-found";
 import { usePageAnalytics } from "@/hooks/usePageAnalytics";
+import { SearchOverlay } from "@/components/search/SearchOverlay";
+import { SearchContext } from "@/lib/searchContext";
 
 // Pages
 import Home from "@/pages/Home";
@@ -58,15 +61,37 @@ function Router() {
 }
 
 function App() {
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Router />
-        </WouterRouter>
-        <Toaster />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <SearchContext.Provider
+      value={{
+        open: searchOpen,
+        openSearch: () => setSearchOpen(true),
+        closeSearch: () => setSearchOpen(false),
+      }}
+    >
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+            <Router />
+          </WouterRouter>
+          <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
+          <Toaster />
+        </TooltipProvider>
+      </QueryClientProvider>
+    </SearchContext.Provider>
   );
 }
 

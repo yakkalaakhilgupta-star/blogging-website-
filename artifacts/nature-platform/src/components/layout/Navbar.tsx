@@ -1,11 +1,13 @@
 import { Link, useLocation } from "wouter";
-import { Leaf, Menu, X } from "lucide-react";
+import { Leaf, Menu, X, Search } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useSearchContext } from "@/lib/searchContext";
 
 export function Navbar() {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { openSearch } = useSearchContext();
 
   const navLinks = [
     { name: "Home", href: "/" },
@@ -47,13 +49,35 @@ export function Navbar() {
             ))}
           </nav>
 
-          {/* Mobile Menu Toggle */}
+          {/* Search Button */}
           <button
-            className="md:hidden p-2 text-foreground"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            onClick={openSearch}
+            className="hidden md:flex items-center gap-2 h-8 px-3 text-sm text-muted-foreground border border-border/60 bg-muted/40 hover:bg-muted hover:text-foreground transition-colors rounded-sm"
+            aria-label="Search"
           >
-            {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            <Search className="h-3.5 w-3.5" />
+            <span className="text-xs">Search</span>
+            <kbd className="inline-flex h-4 items-center gap-0.5 rounded border border-border px-1 font-mono text-[10px] text-muted-foreground">
+              ⌘K
+            </kbd>
           </button>
+
+          {/* Mobile controls */}
+          <div className="flex items-center gap-2 md:hidden">
+            <button
+              onClick={openSearch}
+              className="p-2 text-muted-foreground hover:text-foreground"
+              aria-label="Search"
+            >
+              <Search className="h-5 w-5" />
+            </button>
+            <button
+              className="p-2 text-foreground"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
+          </div>
         </div>
       </div>
 
