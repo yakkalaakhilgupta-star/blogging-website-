@@ -15,6 +15,53 @@ export default function About() {
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:title" content="About – The Verdant Page" />
         <meta name="twitter:description" content="I'm a science writer and journalist focused on the intersection of human culture and wild ecosystems." />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Person",
+          "name": "The Verdant Page Author",
+          "url": `${window.location.origin}/about`,
+          "sameAs": [
+            `${window.location.origin}`
+          ],
+          "jobTitle": "Science Writer & Journalist",
+          "description": "Science writer and journalist focused on the intersection of human culture and wild ecosystems. Covering marine ecology, forest ecosystems, climate adaptation, and rewilding.",
+          "knowsAbout": [
+            "Marine Ecology",
+            "Forest Ecosystems",
+            "Climate Adaptation",
+            "Rewilding",
+            "Conservation Biology",
+            "Science Communication",
+            "Avian Migration",
+            "Natural History"
+          ],
+          "memberOf": [
+            {
+              "@type": "Organization",
+              "name": "National Association of Science Writers",
+              "alternateName": "NASW"
+            },
+            {
+              "@type": "Organization",
+              "name": "Society of Environmental Journalists"
+            }
+          ],
+          "alumniOf": {
+            "@type": "EducationalOccupationalCredential",
+            "credentialCategory": "degree",
+            "about": "Ecology and Evolutionary Biology"
+          },
+          "address": {
+            "@type": "PostalAddress",
+            "addressRegion": "Pacific Northwest",
+            "addressCountry": "US"
+          },
+          "publisher": {
+            "@type": "WebSite",
+            "name": "The Verdant Page",
+            "url": window.location.origin
+          }
+        })}</script>
       </Helmet>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         
