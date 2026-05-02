@@ -1,4 +1,4 @@
-import { useSubmitContact } from "@workspace/api-client-react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,35 +20,29 @@ type ContactFormValues = z.infer<typeof contactSchema>;
 
 export default function Contact() {
   const { toast } = useToast();
-  const submitContact = useSubmitContact();
+  const [isSending, setIsSending] = useState(false);
 
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      subject: "",
-      message: "",
-    },
+    defaultValues: { name: "", email: "", subject: "", message: "" },
   });
 
-  const onSubmit = (data: ContactFormValues) => {
-    submitContact.mutate({ data }, {
-      onSuccess: () => {
-        toast({
-          title: "Message sent",
-          description: "Thank you for reaching out. I'll get back to you soon.",
-        });
-        form.reset();
-      },
-      onError: () => {
-        toast({
-          title: "Error sending message",
-          description: "There was a problem sending your message. Please try again.",
-          variant: "destructive",
-        });
-      }
-    });
+  const onSubmit = async (data: ContactFormValues) => {
+    setIsSending(true);
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to send");
+      toast({ title: "Message sent", description: "Thank you for reaching out. I'll get back to you soon." });
+      form.reset();
+    } catch {
+      toast({ title: "Error sending message", description: "There was a problem sending your message. Please try again.", variant: "destructive" });
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
@@ -171,9 +165,9 @@ export default function Contact() {
                   <Button 
                     type="submit" 
                     className="h-14 px-10 text-base mt-4"
-                    disabled={submitContact.isPending}
+                    disabled={isSending}
                   >
-                    {submitContact.isPending ? "Sending..." : "Send Message"}
+                    {isSending ? "Sending..." : "Send Message"}
                   </Button>
                 </form>
               </Form>

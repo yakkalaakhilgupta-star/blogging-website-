@@ -1,4 +1,4 @@
-import { useGetFeaturedArticles, useGetArticleStats, useSubscribeNewsletter, getGetFeaturedArticlesQueryKey, getGetArticleStatsQueryKey } from "@workspace/api-client-react";
+import { useGetFeaturedArticles, useGetArticleStats, getGetFeaturedArticlesQueryKey, getGetArticleStatsQueryKey } from "@workspace/api-client-react";
 import { ArticleCard } from "@/components/ui/article-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,32 +12,29 @@ import { useToast } from "@/hooks/use-toast";
 export default function Home() {
   const { data: featuredArticles, isLoading: isLoadingFeatured } = useGetFeaturedArticles({ query: { queryKey: getGetFeaturedArticlesQueryKey() } });
   const { data: stats, isLoading: isLoadingStats } = useGetArticleStats({ query: { queryKey: getGetArticleStatsQueryKey() } });
-  
-  const subscribeMutation = useSubscribeNewsletter();
   const { toast } = useToast();
-  
-  const [email, setEmail] = useState("");
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const [email, setEmail] = useState("");
+  const [isSubscribing, setIsSubscribing] = useState(false);
+
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
-    
-    subscribeMutation.mutate({ data: { email } }, {
-      onSuccess: () => {
-        toast({
-          title: "Subscribed successfully",
-          description: "Welcome to The Verdant Page newsletter.",
-        });
-        setEmail("");
-      },
-      onError: () => {
-        toast({
-          title: "Subscription failed",
-          description: "There was an error subscribing to the newsletter.",
-          variant: "destructive",
-        });
-      }
-    });
+    if (!email || isSubscribing) return;
+    setIsSubscribing(true);
+    try {
+      const res = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      if (!res.ok) throw new Error("Subscription failed");
+      toast({ title: "Subscribed successfully", description: "Welcome to The Verdant Page newsletter." });
+      setEmail("");
+    } catch {
+      toast({ title: "Subscription failed", description: "There was an error subscribing.", variant: "destructive" });
+    } finally {
+      setIsSubscribing(false);
+    }
   };
 
   const containerVariants = {
@@ -138,8 +135,8 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-            ) : featuredArticles && featuredArticles.length > 0 ? (
-              featuredArticles.map((article) => (
+            ) : featuredArticles && (featuredArticles as any[]).length > 0 ? (
+              (featuredArticles as any[]).map((article: any) => (
                 <ArticleCard key={article.id} article={article} featured={true} />
               ))
             ) : (
@@ -171,7 +168,7 @@ export default function Home() {
               <div>
                 <div className="font-serif text-4xl mb-1">
                   {isLoadingStats ? <Skeleton className="h-10 w-16 bg-primary-foreground/20 mx-auto" /> : 
-                    stats?.total || 0}
+                    (stats as any)?.total || 0}
                 </div>
                 <div className="text-sm font-medium tracking-wider uppercase text-primary-foreground/70">Articles</div>
               </div>
@@ -183,7 +180,7 @@ export default function Home() {
               <div>
                 <div className="font-serif text-4xl mb-1">
                   {isLoadingStats ? <Skeleton className="h-10 w-16 bg-primary-foreground/20 mx-auto" /> : 
-                    stats?.byCategory.find(c => c.category === 'Animals')?.count || 0}
+                    (stats as any)?.byCategory?.find((c: any) => c.category === 'Animals')?.count || 0}
                 </div>
                 <div className="text-sm font-medium tracking-wider uppercase text-primary-foreground/70">Animal Behavior</div>
               </div>
@@ -195,7 +192,7 @@ export default function Home() {
               <div>
                 <div className="font-serif text-4xl mb-1">
                   {isLoadingStats ? <Skeleton className="h-10 w-16 bg-primary-foreground/20 mx-auto" /> : 
-                    stats?.byCategory.find(c => c.category === 'Plants')?.count || 0}
+                    (stats as any)?.byCategory?.find((c: any) => c.category === 'Plants')?.count || 0}
                 </div>
                 <div className="text-sm font-medium tracking-wider uppercase text-primary-foreground/70">Plant Life</div>
               </div>
@@ -207,21 +204,21 @@ export default function Home() {
               <div>
                 <div className="font-serif text-4xl mb-1">
                   {isLoadingStats ? <Skeleton className="h-10 w-16 bg-primary-foreground/20 mx-auto" /> : 
-                    stats?.byCategory.find(c => c.category === 'Oceans')?.count || 0}
+                    (stats as any)?.byCategory?.find((c: any) => c.category === 'Oceans')?.count || 0}
                 </div>
                 <div className="text-sm font-medium tracking-wider uppercase text-primary-foreground/70">Marine Ecosystems</div>
               </div>
             </div>
             <div className="flex flex-col items-center text-center space-y-4 col-span-2 md:col-span-1">
               <div className="h-16 w-16 rounded-full bg-background/10 flex items-center justify-center">
-                <span className="font-serif text-2xl font-bold">👁</span>
+                <Mountain className="h-8 w-8" />
               </div>
               <div>
                 <div className="font-serif text-4xl mb-1">
                   {isLoadingStats ? <Skeleton className="h-10 w-16 bg-primary-foreground/20 mx-auto" /> : 
-                    (stats as any)?.totalViews || 0}
+                    (stats as any)?.byCategory?.find((c: any) => c.category === 'Conservation')?.count || 0}
                 </div>
-                <div className="text-sm font-medium tracking-wider uppercase text-primary-foreground/70">Total Views</div>
+                <div className="text-sm font-medium tracking-wider uppercase text-primary-foreground/70">Conservation</div>
               </div>
             </div>
           </div>
@@ -252,15 +249,15 @@ export default function Home() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="h-14 bg-background"
-                      disabled={subscribeMutation.isPending}
+                      disabled={isSubscribing}
                     />
                   </div>
                   <Button 
                     type="submit" 
                     className="w-full h-14 text-base"
-                    disabled={subscribeMutation.isPending}
+                    disabled={isSubscribing}
                   >
-                    {subscribeMutation.isPending ? "Subscribing..." : "Subscribe"}
+                    {isSubscribing ? "Subscribing..." : "Subscribe"}
                   </Button>
                   <p className="text-xs text-muted-foreground text-center">
                     No spam. Unsubscribe at any time.

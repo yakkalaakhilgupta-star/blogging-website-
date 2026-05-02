@@ -1,4 +1,3 @@
-import { useSubscribeNewsletter } from "@workspace/api-client-react";
 import { useState } from "react";
 import { Leaf } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -7,32 +6,29 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function Newsletter() {
   const { toast } = useToast();
-  const subscribeMutation = useSubscribeNewsletter();
-  
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
+  const [isSubscribing, setIsSubscribing] = useState(false);
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
-    
-    subscribeMutation.mutate({ data: { email, name: name || undefined } }, {
-      onSuccess: () => {
-        toast({
-          title: "Subscribed successfully",
-          description: "Welcome to The Verdant Page newsletter.",
-        });
-        setEmail("");
-        setName("");
-      },
-      onError: () => {
-        toast({
-          title: "Subscription failed",
-          description: "There was an error subscribing to the newsletter.",
-          variant: "destructive",
-        });
-      }
-    });
+    if (!email || isSubscribing) return;
+    setIsSubscribing(true);
+    try {
+      const res = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, name: name || undefined }),
+      });
+      if (!res.ok) throw new Error("Subscription failed");
+      toast({ title: "Subscribed successfully", description: "Welcome to The Verdant Page newsletter." });
+      setEmail("");
+      setName("");
+    } catch {
+      toast({ title: "Subscription failed", description: "There was an error subscribing to the newsletter.", variant: "destructive" });
+    } finally {
+      setIsSubscribing(false);
+    }
   };
 
   return (
@@ -79,7 +75,7 @@ export default function Newsletter() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="h-12 bg-background border-border/50"
-                disabled={subscribeMutation.isPending}
+                disabled={isSubscribing}
               />
             </div>
             
@@ -93,16 +89,16 @@ export default function Newsletter() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="h-12 bg-background border-border/50"
-                disabled={subscribeMutation.isPending}
+                disabled={isSubscribing}
               />
             </div>
 
             <Button 
               type="submit" 
               className="w-full h-14 text-base mt-2"
-              disabled={subscribeMutation.isPending}
+              disabled={isSubscribing}
             >
-              {subscribeMutation.isPending ? "Subscribing..." : "Subscribe to Field Notes"}
+              {isSubscribing ? "Subscribing..." : "Subscribe to Field Notes"}
             </Button>
             
             <p className="text-xs text-muted-foreground text-center pt-4">

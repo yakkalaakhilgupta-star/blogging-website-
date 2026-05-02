@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { articlesTable } from "./articles";
@@ -22,7 +22,10 @@ export const speciesTable = pgTable("species", {
   iucnUrl: text("iucn_url"),
   articleId: integer("article_id").references(() => articlesTable.id),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+}, (t) => [
+  index("species_slug_idx").on(t.slug),
+  index("species_conservation_status_idx").on(t.conservationStatus),
+]);
 
 export const insertSpeciesSchema = createInsertSchema(speciesTable).omit({ id: true, createdAt: true });
 export type InsertSpecies = z.infer<typeof insertSpeciesSchema>;

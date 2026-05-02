@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, primaryKey } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, primaryKey, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { articlesTable } from "./articles";
@@ -12,7 +12,11 @@ export const tagsTable = pgTable("tags", {
 export const articleTagsTable = pgTable("article_tags", {
   articleId: integer("article_id").notNull().references(() => articlesTable.id, { onDelete: "cascade" }),
   tagId: integer("tag_id").notNull().references(() => tagsTable.id, { onDelete: "cascade" }),
-}, (t) => [primaryKey({ columns: [t.articleId, t.tagId] })]);
+}, (t) => [
+  primaryKey({ columns: [t.articleId, t.tagId] }),
+  index("article_tags_tag_id_idx").on(t.tagId),
+  index("article_tags_article_id_idx").on(t.articleId),
+]);
 
 export const insertTagSchema = createInsertSchema(tagsTable).omit({ id: true });
 export type InsertTag = z.infer<typeof insertTagSchema>;
