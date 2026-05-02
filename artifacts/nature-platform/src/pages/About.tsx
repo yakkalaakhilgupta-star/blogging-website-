@@ -11,10 +11,13 @@ export default function About() {
         <meta property="og:type" content="website" />
         <meta property="og:title" content="About – The Verdant Page" />
         <meta property="og:description" content="I'm a science writer and journalist focused on the intersection of human culture and wild ecosystems." />
-        <meta property="og:url" content={window.location.href} />
-        <meta name="twitter:card" content="summary" />
+        <link rel="canonical" href={`${window.location.origin}/about`} />
+        <meta property="og:url" content={`${window.location.origin}/about`} />
+        <meta property="og:image" content={`${window.location.origin}/opengraph.jpg`} />
+        <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="About – The Verdant Page" />
         <meta name="twitter:description" content="I'm a science writer and journalist focused on the intersection of human culture and wild ecosystems." />
+        <meta name="twitter:image" content={`${window.location.origin}/opengraph.jpg`} />
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Person",

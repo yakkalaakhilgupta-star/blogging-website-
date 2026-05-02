@@ -124,10 +124,21 @@ export default function Articles() {
         <meta property="og:type" content="website" />
         <meta property="og:title" content="Essays – The Verdant Page" />
         <meta property="og:description" content="All essays and articles about the natural world — ecology, wildlife, conservation, and more." />
-        <meta property="og:url" content={window.location.href} />
-        <meta name="twitter:card" content="summary" />
+        <link rel="canonical" href={`${window.location.origin}/articles`} />
+        <meta property="og:url" content={`${window.location.origin}/articles`} />
+        <meta property="og:image" content={`${window.location.origin}/opengraph.jpg`} />
+        <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Essays – The Verdant Page" />
         <meta name="twitter:description" content="All essays and articles about the natural world — ecology, wildlife, conservation, and more." />
+        <meta name="twitter:image" content={`${window.location.origin}/opengraph.jpg`} />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          "name": "Essays & Field Notes",
+          "description": "All essays and articles about the natural world — ecology, wildlife, conservation, and more.",
+          "url": `${window.location.origin}/articles`,
+          "isPartOf": { "@type": "WebSite", "name": "The Verdant Page", "url": window.location.origin }
+        })}</script>
       </Helmet>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}

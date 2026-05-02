@@ -39,10 +39,32 @@ export default function Services() {
         <meta property="og:type" content="website" />
         <meta property="og:title" content="Writing Services – The Verdant Page" />
         <meta property="og:description" content="Freelance nature writing services: feature articles, scientific communication, educational content, and consulting." />
-        <meta property="og:url" content={window.location.href} />
-        <meta name="twitter:card" content="summary" />
+        <link rel="canonical" href={`${window.location.origin}/services`} />
+        <meta property="og:url" content={`${window.location.origin}/services`} />
+        <meta property="og:image" content={`${window.location.origin}/opengraph.jpg`} />
+        <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Writing Services – The Verdant Page" />
         <meta name="twitter:description" content="Freelance nature writing services: feature articles, scientific communication, educational content, and consulting." />
+        <meta name="twitter:image" content={`${window.location.origin}/opengraph.jpg`} />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "ProfessionalService",
+          "name": "The Verdant Page – Writing Services",
+          "url": `${window.location.origin}/services`,
+          "description": "Freelance nature writing services: feature articles, scientific communication, educational content, and consulting.",
+          "areaServed": "Worldwide",
+          "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "Writing Services",
+            "itemListElement": [
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Feature Articles", "description": "In-depth, rigorously researched narrative features for magazines and digital publications." } },
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Scientific Communication", "description": "Translating complex research into accessible, engaging narratives for general audiences." } },
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Educational Content", "description": "Curriculum materials, museum exhibition copy, and interpretive signage that brings natural history to life." } },
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Brand Content & Copywriting", "description": "Purpose-driven storytelling for sustainable brands, eco-tourism operations, and outdoor companies." } },
+              { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Email Newsletters", "description": "Engaging recurring content for organizations building loyal audiences around environmental topics." } }
+            ]
+          }
+        })}</script>
       </Helmet>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         

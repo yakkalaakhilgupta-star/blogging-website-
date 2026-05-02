@@ -52,10 +52,21 @@ export default function Species() {
         <meta property="og:type" content="website" />
         <meta property="og:title" content="Species Directory – The Verdant Page" />
         <meta property="og:description" content="A field guide to wildlife, plants, and fungi — ecology, conservation status, and natural history notes." />
-        <meta property="og:url" content={window.location.href} />
-        <meta name="twitter:card" content="summary" />
+        <link rel="canonical" href={`${window.location.origin}/species`} />
+        <meta property="og:url" content={`${window.location.origin}/species`} />
+        <meta property="og:image" content={`${window.location.origin}/opengraph.jpg`} />
+        <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Species Directory – The Verdant Page" />
         <meta name="twitter:description" content="A field guide to wildlife, plants, and fungi — ecology, conservation status, and natural history notes." />
+        <meta name="twitter:image" content={`${window.location.origin}/opengraph.jpg`} />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          "name": "Species Directory – The Verdant Page",
+          "description": "A field guide to wildlife, plants, and fungi — ecology, conservation status, and natural history notes.",
+          "url": `${window.location.origin}/species`,
+          "isPartOf": { "@type": "WebSite", "name": "The Verdant Page", "url": window.location.origin }
+        })}</script>
       </Helmet>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mb-16">

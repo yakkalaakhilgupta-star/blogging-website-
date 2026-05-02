@@ -28,10 +28,21 @@ export default function Portfolio() {
         <meta property="og:type" content="website" />
         <meta property="og:title" content="Portfolio – The Verdant Page" />
         <meta property="og:description" content="Published clips and writing samples across ecology, wildlife, conservation, and natural history." />
-        <meta property="og:url" content={window.location.href} />
-        <meta name="twitter:card" content="summary" />
+        <link rel="canonical" href={`${window.location.origin}/portfolio`} />
+        <meta property="og:url" content={`${window.location.origin}/portfolio`} />
+        <meta property="og:image" content={`${window.location.origin}/opengraph.jpg`} />
+        <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Portfolio – The Verdant Page" />
         <meta name="twitter:description" content="Published clips and writing samples across ecology, wildlife, conservation, and natural history." />
+        <meta name="twitter:image" content={`${window.location.origin}/opengraph.jpg`} />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          "name": "Published Work – The Verdant Page",
+          "description": "Published clips and writing samples across ecology, wildlife, conservation, and natural history.",
+          "url": `${window.location.origin}/portfolio`,
+          "isPartOf": { "@type": "WebSite", "name": "The Verdant Page", "url": window.location.origin }
+        })}</script>
       </Helmet>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         

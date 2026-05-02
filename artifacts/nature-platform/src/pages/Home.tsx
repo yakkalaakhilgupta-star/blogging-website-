@@ -65,12 +65,13 @@ export default function Home() {
         <meta property="og:type" content="website" />
         <meta property="og:title" content="The Verdant Page – Nature Writing" />
         <meta property="og:description" content="Science and storytelling from the natural world. Rigorous science wrapped in lyrical prose." />
-        <meta property="og:url" content={window.location.href} />
-        <meta property="og:image" content="/opengraph.jpg" />
+        <link rel="canonical" href={`${window.location.origin}/`} />
+        <meta property="og:url" content={`${window.location.origin}/`} />
+        <meta property="og:image" content={`${window.location.origin}/opengraph.jpg`} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="The Verdant Page – Nature Writing" />
         <meta name="twitter:description" content="Science and storytelling from the natural world. Rigorous science wrapped in lyrical prose." />
-        <meta name="twitter:image" content="/opengraph.jpg" />
+        <meta name="twitter:image" content={`${window.location.origin}/opengraph.jpg`} />
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "WebSite",
