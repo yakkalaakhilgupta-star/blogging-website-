@@ -129,6 +129,30 @@ export default function ArticleReader() {
             "@id": canonicalUrl
           }
         })}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "The Verdant Page",
+              "item": window.location.origin
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Essays",
+              "item": `${window.location.origin}/articles`
+            },
+            {
+              "@type": "ListItem",
+              "position": 3,
+              "name": article.title,
+              "item": canonicalUrl
+            }
+          ]
+        })}</script>
       </Helmet>
 
       <ReadingProgressBar />
