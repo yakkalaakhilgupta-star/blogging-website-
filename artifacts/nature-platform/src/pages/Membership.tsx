@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { useLocation } from "wouter";
 
 interface Price {
@@ -133,6 +134,20 @@ export default function Membership() {
 
   return (
     <div className="min-h-screen bg-stone-50">
+      <Helmet>
+        <title>Membership – The Verdant Page</title>
+        <meta name="description" content="Support independent nature writing. Become a member of The Verdant Page and help fund rigorous, lyrical science journalism." />
+        <link rel="canonical" href={`${window.location.origin}/membership`} />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Membership – The Verdant Page" />
+        <meta property="og:description" content="Support independent nature writing. Become a member of The Verdant Page and help fund rigorous, lyrical science journalism." />
+        <meta property="og:url" content={`${window.location.origin}/membership`} />
+        <meta property="og:image" content={`${window.location.origin}/opengraph.jpg`} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Membership – The Verdant Page" />
+        <meta name="twitter:description" content="Support independent nature writing. Become a member of The Verdant Page and help fund rigorous, lyrical science journalism." />
+        <meta name="twitter:image" content={`${window.location.origin}/opengraph.jpg`} />
+      </Helmet>
       <div className="max-w-4xl mx-auto px-4 py-16 sm:px-6">
         <header className="text-center mb-16">
           <p className="text-sm font-medium tracking-widest text-emerald-700 uppercase mb-4">

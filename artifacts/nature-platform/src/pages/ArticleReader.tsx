@@ -80,6 +80,7 @@ export default function ArticleReader() {
   }
 
   const publishedDate = article.publishedAt ? new Date(article.publishedAt) : new Date(article.createdAt);
+  const modifiedDate = article.updatedAt ? new Date(article.updatedAt) : publishedDate;
   const pageTitle = article.seoTitle || article.title;
   const pageDesc = article.seoDescription || article.excerpt;
   const canonicalUrl = `${window.location.origin}/articles/${article.slug}`;
@@ -94,13 +95,19 @@ export default function ArticleReader() {
         <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={pageDesc} />
         <meta property="og:url" content={canonicalUrl} />
-        {article.imageUrl && <meta property="og:image" content={article.imageUrl} />}
+        <meta property="og:image" content={article.imageUrl || `${window.location.origin}/opengraph.jpg`} />
         <meta property="article:published_time" content={publishedDate.toISOString()} />
+        <meta property="article:modified_time" content={modifiedDate.toISOString()} />
         <meta property="article:section" content={article.category} />
+        <meta property="article:author" content="The Verdant Page" />
+        {article.tags?.map((t) => (
+          <meta key={t.slug} property="article:tag" content={t.name} />
+        ))}
+        <meta name="author" content="The Verdant Page" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={pageTitle} />
         <meta name="twitter:description" content={pageDesc} />
-        {article.imageUrl && <meta name="twitter:image" content={article.imageUrl} />}
+        <meta name="twitter:image" content={article.imageUrl || `${window.location.origin}/opengraph.jpg`} />
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Article",
@@ -109,7 +116,7 @@ export default function ArticleReader() {
           "image": article.imageUrl || undefined,
           "url": canonicalUrl,
           "datePublished": publishedDate.toISOString(),
-          "dateModified": publishedDate.toISOString(),
+          "dateModified": modifiedDate.toISOString(),
           "author": {
             "@type": "Person",
             "name": "The Verdant Page"

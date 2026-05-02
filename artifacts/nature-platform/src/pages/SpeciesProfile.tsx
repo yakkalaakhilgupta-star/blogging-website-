@@ -79,13 +79,32 @@ export default function SpeciesProfile() {
         <title>{pageTitle} | The Verdant Page</title>
         <meta name="description" content={pageDesc} />
         <link rel="canonical" href={`${window.location.origin}/species/${species.slug}`} />
+        <meta property="og:type" content="website" />
         <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={pageDesc} />
-        {species.imageUrl && <meta property="og:image" content={species.imageUrl} />}
+        <meta property="og:url" content={`${window.location.origin}/species/${species.slug}`} />
+        <meta property="og:image" content={species.imageUrl || `${window.location.origin}/opengraph.jpg`} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={pageTitle} />
         <meta name="twitter:description" content={pageDesc} />
-        {species.imageUrl && <meta name="twitter:image" content={species.imageUrl} />}
+        <meta name="twitter:image" content={species.imageUrl || `${window.location.origin}/opengraph.jpg`} />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Taxon",
+          "name": species.scientificName,
+          "commonName": species.commonName,
+          "url": `${window.location.origin}/species/${species.slug}`,
+          "description": pageDesc,
+          ...(species.imageUrl ? { "image": species.imageUrl } : {}),
+          ...(species.conservationStatus ? {
+            "conservationStatus": `https://www.iucnredlist.org/search?query=${species.conservationStatus}`,
+          } : {}),
+          "isPartOf": {
+            "@type": "WebSite",
+            "name": "The Verdant Page",
+            "url": window.location.origin
+          }
+        })}</script>
       </Helmet>
 
       <article className="w-full bg-background pt-12 pb-32">
