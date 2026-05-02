@@ -11,17 +11,8 @@ router.get("/membership/products", async (_req, res) => {
   try {
     const products = await listProductsWithPrices();
     res.json({ products });
-  } catch (err: any) {
-    if (
-      err.message?.includes("not connected") ||
-      err.message?.includes("Missing Replit") ||
-      err.code === "42P01" ||
-      err.message?.includes("stripe") ||
-      err.message?.includes("schema")
-    ) {
-      return res.status(503).json({ error: "stripe_not_configured" });
-    }
-    res.status(500).json({ error: "Failed to load products" });
+  } catch {
+    res.status(503).json({ error: "stripe_not_configured" });
   }
 });
 
