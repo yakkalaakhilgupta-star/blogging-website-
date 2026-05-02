@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { articlesTable, speciesTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 const router = Router();
 
@@ -21,10 +21,12 @@ router.get("/sitemap.xml", async (req, res) => {
     db
       .select({ slug: articlesTable.slug, updatedAt: articlesTable.updatedAt, publishedAt: articlesTable.publishedAt })
       .from(articlesTable)
-      .where(eq(articlesTable.status, "published")),
+      .where(eq(articlesTable.status, "published"))
+      .orderBy(sql`${articlesTable.publishedAt} desc`),
     db
       .select({ slug: speciesTable.slug, createdAt: speciesTable.createdAt })
-      .from(speciesTable),
+      .from(speciesTable)
+      .orderBy(speciesTable.commonName),
   ]);
 
   const staticPages = [
