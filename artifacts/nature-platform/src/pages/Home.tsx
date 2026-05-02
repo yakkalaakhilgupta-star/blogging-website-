@@ -71,6 +71,21 @@ export default function Home() {
         <meta name="twitter:title" content="The Verdant Page – Nature Writing" />
         <meta name="twitter:description" content="Science and storytelling from the natural world. Rigorous science wrapped in lyrical prose." />
         <meta name="twitter:image" content="/opengraph.jpg" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          "name": "The Verdant Page",
+          "url": window.location.origin,
+          "description": "Science and storytelling from the natural world. Rigorous science wrapped in lyrical prose.",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": `${window.location.origin}/articles?q={search_term_string}`
+            },
+            "query-input": "required name=search_term_string"
+          }
+        })}</script>
       </Helmet>
       {/* Hero Section */}
       <section className="relative min-h-[90vh] flex items-center pt-20 overflow-hidden">
