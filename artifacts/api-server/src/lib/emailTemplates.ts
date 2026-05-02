@@ -37,6 +37,15 @@ export function unsubscribeEmail(): string {
 <p>If you change your mind, you're always welcome to <a href="${BASE}/newsletter" style="color:#2d5016">subscribe again</a>.</p>`);
 }
 
+export function confirmedEmail(name: string | null | undefined): string {
+  const hi = name ? `Hello ${name},` : "Hello,";
+  return wrap(`<p>${hi}</p>
+<p>You're now confirmed and officially part of <strong>The Verdant Page</strong> community. Welcome!</p>
+<p>Expect thoughtful essays at the intersection of science and story — delivered straight to your inbox.</p>
+<a href="${BASE}" class="btn">Read the latest</a>
+<p style="font-size:13px;color:#9ca3af">Thank you for joining us.</p>`);
+}
+
 export function broadcastEmail(subject: string, bodyHtml: string, unsubToken: string): string {
   const unsub = `${BASE}/unsubscribe?token=${unsubToken}`;
   return wrap(`${bodyHtml}

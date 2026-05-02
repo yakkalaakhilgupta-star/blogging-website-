@@ -7,7 +7,7 @@ import { pool } from "@workspace/db";
 import validator from "validator";
 import { requireAdmin } from "../middlewares/adminAuth";
 import { sendEmail } from "../lib/email";
-import { welcomeEmail, unsubscribeEmail, broadcastEmail } from "../lib/emailTemplates";
+import { welcomeEmail, confirmedEmail, unsubscribeEmail, broadcastEmail } from "../lib/emailTemplates";
 import crypto from "crypto";
 
 const router = Router();
@@ -72,7 +72,12 @@ router.get("/newsletter/confirm", async (req, res) => {
       res.status(404).json({ error: "Invalid or expired token" });
       return;
     }
-    res.json({ message: "Subscription confirmed", email: result.rows[0].email });
+    const { email, name } = result.rows[0];
+    const emailSent = await sendEmail(email, "Welcome to The Verdant Page!", confirmedEmail(name));
+    if (!emailSent) {
+      console.error("[newsletter] Failed to send welcome email to", email);
+    }
+    res.json({ message: "Subscription confirmed", email });
   } catch (err) {
     console.error("[newsletter] Confirm error:", err);
     res.status(500).json({ error: "Confirmation failed" });
